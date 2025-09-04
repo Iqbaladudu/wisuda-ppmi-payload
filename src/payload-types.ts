@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    registrants: Registrant;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,12 +78,13 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    registrants: RegistrantsSelect<false> | RegistrantsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
@@ -118,7 +120,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -142,7 +144,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -158,23 +160,120 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registrants".
+ */
+export interface Registrant {
+  id: number;
+  registrant_type: 'SHOFI' | 'TASHFIYAH' | 'ATRIBUT';
+  name: string;
+  name_arabic: string;
+  gender: 'L' | 'P';
+  email: string;
+  nationality: string;
+  passport_number?: string | null;
+  phone_number?: string | null;
+  whatsapp: string;
+  kekeluargaan?:
+    | (
+        | 'KMB'
+        | 'KMJ'
+        | 'KPJ'
+        | 'KPMJB'
+        | 'KMA'
+        | 'KSW'
+        | 'KEMASS'
+        | 'KKS'
+        | 'KSMR'
+        | 'KMNTB'
+        | 'KMKM'
+        | 'KMM'
+        | 'IKMAL'
+        | 'GAMAJATIM'
+        | 'HMMSU'
+        | 'FOSGAMA'
+      )
+    | null;
+  university: 'AL_AZHAR' | 'OTHER';
+  education_level: 'S1' | 'S2' | 'S3';
+  first_enrollment_year: number;
+  graduation_year: number;
+  faculty: 'USHULUDDIN' | 'SYARIAH_QANUN' | 'BAHASA_ARAB' | 'DIRASAT_BANIN' | 'DIRASAT_BANAT' | 'OTHER';
+  major:
+    | 'TAFSIR_ULUMUL_QURAN'
+    | 'HADITS_ULUM'
+    | 'AQIDAH_FALSAFAH'
+    | 'DAKWAH_TSAQOFAH'
+    | 'SYARIAH_ISLAMIYAH'
+    | 'SYARIAH_QANUN'
+    | 'BAHASA_ARAB_AMMAH'
+    | 'TARIKH_HADHARAH'
+    | 'OTHER';
+  quran_memorization: number;
+  /**
+   * Otomatis dihitung dari graduation_year - first_enrollment_year
+   */
+  study_duration?: number | null;
+  continuing_study?: ('YES' | 'NO' | 'UNDECIDED') | null;
+  kulliyah?: ('ULUUM_ISLAMIYAH' | 'DIRASAT_ULYA' | 'DIRASAT_ISLAMIYAH_ARABIAH' | 'OTHER' | 'TIDAK ADA') | null;
+  syubah?:
+    | (
+        | 'TAFSIR_ULUMUL_QURAN'
+        | 'HADITS_ULUM'
+        | 'AQIDAH_FALSAFAH'
+        | 'FIQH_AM'
+        | 'FIQIH_MUQARRAN'
+        | 'USHUL_FIQH'
+        | 'LUGHAYWIYAT'
+        | 'BALAGHAH_NAQD'
+        | 'ADAB_NAQD'
+        | 'OTHER'
+        | 'TIDAK ADA'
+      )
+    | null;
+  shofi_ready_attend?: boolean | null;
+  predicate?:
+    | ('MUMTAZ_MMS' | 'MUMTAZ' | 'JAYYID_JIDDAN_MMS' | 'JAYYID_JIDDAN' | 'JAYYID' | 'MAQBUL' | 'RASIB' | 'DHAIF')
+    | null;
+  cumulative_score?: number | null;
+  syahadah_photo?: (number | null) | Media;
+  tashfiyah_ready_attend?: boolean | null;
+  tashfiyah_ready_submit_proof?: boolean | null;
+  tashfiyah_no_graduation_if_failed?: boolean | null;
+  tashfiyah_still_get_attributes?: boolean | null;
+  atribut_ready_attend?: boolean | null;
+  attribute_package?: ('SELENDANG_PIN_MEDALI' | 'PLAKAT' | 'LENGKAP') | null;
+  photo: number | Media;
+  terms_agreement: boolean;
+  /**
+   * Otomatis di-generate berdasarkan ID database
+   */
+  reg_id?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'registrants';
+        value: number | Registrant;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -184,10 +283,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -207,7 +306,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -252,6 +351,48 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registrants_select".
+ */
+export interface RegistrantsSelect<T extends boolean = true> {
+  registrant_type?: T;
+  name?: T;
+  name_arabic?: T;
+  gender?: T;
+  email?: T;
+  nationality?: T;
+  passport_number?: T;
+  phone_number?: T;
+  whatsapp?: T;
+  kekeluargaan?: T;
+  university?: T;
+  education_level?: T;
+  first_enrollment_year?: T;
+  graduation_year?: T;
+  faculty?: T;
+  major?: T;
+  quran_memorization?: T;
+  study_duration?: T;
+  continuing_study?: T;
+  kulliyah?: T;
+  syubah?: T;
+  shofi_ready_attend?: T;
+  predicate?: T;
+  cumulative_score?: T;
+  syahadah_photo?: T;
+  tashfiyah_ready_attend?: T;
+  tashfiyah_ready_submit_proof?: T;
+  tashfiyah_no_graduation_if_failed?: T;
+  tashfiyah_still_get_attributes?: T;
+  atribut_ready_attend?: T;
+  attribute_package?: T;
+  photo?: T;
+  terms_agreement?: T;
+  reg_id?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
