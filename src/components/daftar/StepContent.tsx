@@ -1,0 +1,671 @@
+import React from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FormData } from '../../constants/constants'
+
+interface StepContentProps {
+  currentStep: number
+  form: UseFormReturn<FormData>
+}
+
+const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
+  switch (currentStep) {
+    case 0:
+      return (
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="registrant_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipe Pendaftar</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih tipe pendaftar" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="SHOFI">Shofi</SelectItem>
+                    <SelectItem value="TASHFIYAH">Tashfiyah</SelectItem>
+                    <SelectItem value="ATRIBUT">Pembeli Atribut</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Lengkap (Latin)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan nama lengkap" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="name_arabic"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Lengkap (Arab)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan nama Arab" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jenis Kelamin</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis kelamin" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="L">Laki-laki</SelectItem>
+                    <SelectItem value="P">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Masukkan email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="nationality"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kewarganegaraan</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan kewarganegaraan" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="passport_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nomor Paspor</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan nomor paspor (jika bukan WNI)" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nomor Telepon</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan nomor telepon" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="whatsapp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nomor WhatsApp</FormLabel>
+                <FormControl>
+                  <Input placeholder="Masukkan nomor WhatsApp" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="kekeluargaan"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kekeluargaan</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih kekeluargaan" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="KMM">Kesepakatan Mahasiswa Minangkabau</SelectItem>
+                    <SelectItem value="KMB">Kesepakatan Mahasiswa Banten</SelectItem>
+                    <SelectItem value="KMJ">Keluarga Mahasiswa Jambi</SelectItem>
+                    <SelectItem value="KPJ">Keluarga Pelajar Jakarta</SelectItem>
+                    <SelectItem value="KMA">Keluarga Mahasiswa Aceh</SelectItem>
+                    <SelectItem value="KSW">Kelompok Studi Walisongo</SelectItem>
+                    <SelectItem value="KEMASS">Keluarga Masyarakat Sumatera Selatan</SelectItem>
+                    <SelectItem value="KKS">Kerukunan Keluarga Sulawesi</SelectItem>
+                    <SelectItem value="KSMR">Kelompok Studi Mahasiswa Riau</SelectItem>
+                    <SelectItem value="KMNTB">Keluarga Mahasiswa Nusa Tenggara & Bali</SelectItem>
+                    <SelectItem value="KMKM">Keluarga Mahasiswa Kalimantan</SelectItem>
+                    <SelectItem value="IKMAL">Ikatan Keluarga Mahasiswa Lampung</SelectItem>
+                    <SelectItem value="GAMAJATIM">Keluarga Masyarakat Jawa Timur</SelectItem>
+                    <SelectItem value="HMMSU">
+                      Himpunan Masyarakat dan Mahasiswa Sumatera Utara
+                    </SelectItem>
+                    <SelectItem value="FOSGAMA">Forum Studi Keluarga Madura</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )
+    case 1:
+      return (
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="university"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Universitas</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih universitas" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="AL_AZHAR">Al Azhar</SelectItem>
+                    <SelectItem value="OTHER">Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="education_level"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jenjang Pendidikan</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenjang" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="S1">Strata 1/Sarjana</SelectItem>
+                    <SelectItem value="S2">Strata 2/Magister</SelectItem>
+                    <SelectItem value="S3">Strata 3/Doktor</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="first_enrollment_year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tahun Pertama Terdaftar</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="graduation_year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tahun Menyelesaikan Pendidikan</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="faculty"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fakultas</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih fakultas" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="USHULUDDIN">Ushuluddin</SelectItem>
+                    <SelectItem value="SYARIAH_QANUN">Syariah wal Qonun</SelectItem>
+                    <SelectItem value="BAHASA_ARAB">Lughoh Arabiyah</SelectItem>
+                    <SelectItem value="DIRASAT_BANIN">
+                      Dirasat Islamiyah wal Arabiyah Lil Banin
+                    </SelectItem>
+                    <SelectItem value="DIRASAT_BANAT">
+                      Dirasat Islamiyah wal Arabiyah Lil Banat
+                    </SelectItem>
+                    <SelectItem value="OTHER">Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="major"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jurusan</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jurusan" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="TAFSIR_ULUMUL_QURAN">Tafsir wa Ulumul Quran</SelectItem>
+                    <SelectItem value="HADITS_ULUM">Hadits wa Ulumul Hadits</SelectItem>
+                    <SelectItem value="AQIDAH_FALSAFAH">Aqidah wal Falsafah</SelectItem>
+                    <SelectItem value="DAKWAH_TSAQOFAH">Dakwah wa Tsaqofah</SelectItem>
+                    <SelectItem value="SYARIAH_ISLAMIYAH">Syariah Islamiyah</SelectItem>
+                    <SelectItem value="SYARIAH_QANUN">Syariah wal Qonun</SelectItem>
+                    <SelectItem value="BAHASA_ARAB_AMMAH">Lughoh Arabiyah Ammah</SelectItem>
+                    <SelectItem value="TARIKH_HADHARAH">Tarikh wal Hadharah</SelectItem>
+                    <SelectItem value="OTHER">Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="quran_memorization"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jumlah Juz Al Quran yang dihafal</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="30"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )
+    case 2:
+      const registrantType = form.watch('registrant_type')
+      return (
+        <div className="space-y-4">
+          {registrantType === 'SHOFI' && (
+            <>
+              <FormField
+                control={form.control}
+                name="shofi_ready_attend"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Siap hadiri pendaftaran</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="predicate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Predikat</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih predikat" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="MUMTAZ_MMS">Mumtaz Ma'a Martabati Syarof</SelectItem>
+                        <SelectItem value="MUMTAZ">Mumtaz</SelectItem>
+                        <SelectItem value="JAYYID_JIDDAN_MMS">
+                          Jayyid Jiddan Ma'a Martabati Syarof
+                        </SelectItem>
+                        <SelectItem value="JAYYID_JIDDAN">Jayyid Jiddan</SelectItem>
+                        <SelectItem value="JAYYID">Jayyid</SelectItem>
+                        <SelectItem value="MAQBUL">Maqbul</SelectItem>
+                        <SelectItem value="RASIB">Rasib</SelectItem>
+                        <SelectItem value="DHAIF">Dhaif</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="cumulative_score"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nilai Akumulatif</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="syahadah_photo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Foto Syahadah</FormLabel>
+                    <FormControl>
+                      <Input type="file" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+          {registrantType === 'TASHFIYAH' && (
+            <>
+              <FormField
+                control={form.control}
+                name="tashfiyah_ready_attend"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Siap hadiri pendaftaran</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tashfiyah_ready_submit_proof"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Siap serahkan bukti kelulusan</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tashfiyah_no_graduation_if_failed"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Tidak lulus = tidak ikut wisuda</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tashfiyah_still_get_attributes"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Tidak lulus = tetap dapat atribut</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+          {registrantType === 'ATRIBUT' && (
+            <>
+              <FormField
+                control={form.control}
+                name="atribut_ready_attend"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Siap hadir</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="attribute_package"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Paket Atribut</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih paket" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="SELENDANG_PIN_MEDALI">
+                          Selendang, Pin, dan Medali
+                        </SelectItem>
+                        <SelectItem value="PLAKAT">Plakat</SelectItem>
+                        <SelectItem value="LENGKAP">Selendang, Pin, Medali, dan Plakat</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+          <FormField
+            control={form.control}
+            name="continuing_study"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Melanjutkan ke S2?</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="YES">Ya</SelectItem>
+                    <SelectItem value="NO">Tidak</SelectItem>
+                    <SelectItem value="UNDECIDED">Belum Memutuskan</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {form.watch('education_level') === 'S1' && form.watch('continuing_study') === 'YES' && (
+            <>
+              <FormField
+                control={form.control}
+                name="kulliyah"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kulliyah</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih kulliyah" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ULUUM_ISLAMIYAH">Kulliyah Uluum Islamiyah</SelectItem>
+                        <SelectItem value="DIRASAT_ULYA">Kulliyah Dirasat Ulya</SelectItem>
+                        <SelectItem value="DIRASAT_ISLAMIYAH_ARABIAH">
+                          Kulliyah Dirasat Islamiah Wa Arabiah
+                        </SelectItem>
+                        <SelectItem value="OTHER">Lainnya</SelectItem>
+                        <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="syubah"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Syu'bah</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih syu'bah" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="TAFSIR_ULUMUL_QURAN">Tafsir wa Ulumul Qur'an</SelectItem>
+                        <SelectItem value="HADITS_ULUM">Hadits wa Ulumul Hadits</SelectItem>
+                        <SelectItem value="AQIDAH_FALSAFAH">Aqidah wa Falsafah</SelectItem>
+                        <SelectItem value="FIQH_AM">Fiqh Am</SelectItem>
+                        <SelectItem value="FIQIH_MUQARRAN">Fiqih Muqarran</SelectItem>
+                        <SelectItem value="USHUL_FIQH">Ushul Fiqh</SelectItem>
+                        <SelectItem value="LUGHAYWIYAT">Lughawiyyat</SelectItem>
+                        <SelectItem value="BALAGHAH_NAQD">Balaghah Wa Naqd</SelectItem>
+                        <SelectItem value="ADAB_NAQD">Adab Wa Naqd</SelectItem>
+                        <SelectItem value="OTHER">Lainnya</SelectItem>
+                        <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+        </div>
+      )
+    case 3:
+      return (
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="photo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Foto Diri</FormLabel>
+                <FormControl>
+                  <Input type="file" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="terms_agreement"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Persetujuan Syarat & Ketentuan</FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )
+    case 4:
+      const formData = form.getValues()
+      return (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Ringkasan Data</h3>
+          <pre className="bg-gray-100 p-4 rounded">{JSON.stringify(formData, null, 2)}</pre>
+          <p>Klik "Kirim" untuk menyelesaikan pendaftaran.</p>
+        </div>
+      )
+    default:
+      return null
+  }
+}
+
+export default React.memo(StepContent)
