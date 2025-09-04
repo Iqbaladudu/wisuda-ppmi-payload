@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { Registrants } from './collections/Registrants'
 import GoogleTokens from './collections/GoogleTokens'
 import GoogleSheets from './collections/GoogleSheets'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -21,6 +22,12 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      beforeNavLinks: [
+        'src/app/(payload)/admin/components/ConnectGoogle.tsx#default',
+        'src/app/(payload)/admin/components/ExportToSheet.tsx#default',
+      ],
     },
   },
   collections: [Users, Media, Registrants, GoogleTokens, GoogleSheets],
@@ -39,6 +46,17 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    s3Storage({
+      collections: { media: true },
+      bucket: process.env.CLOUDFLARE_STORAGE_BUCKET_NAME!,
+      config: {
+        credentials: {
+          accessKeyId: process.env.CLOUDFLARE_STORAGE_ACCESS_KEY!,
+          secretAccessKey: process.env.CLOUDFLARE_STORAGE_SECRET_KEY!,
+        },
+        region: 'auto',
+        endpoint: process.env.CLOUDFLARE_STORAGE_ENDPOINT_URL!,
+      },
+    }),
   ],
 })

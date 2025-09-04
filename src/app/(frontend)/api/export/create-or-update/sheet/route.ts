@@ -13,6 +13,8 @@ type SheetPayload = {
   range?: string
   spreadsheetId?: string // If provided we update instead of create
   clear?: boolean // default true when updating
+  google_user_id?: string
+  email?: string
 }
 
 interface ResultOk {
@@ -89,6 +91,8 @@ export async function POST(req: NextRequest) {
     values,
     spreadsheetId,
     clear = true,
+    google_user_id,
+    email,
   } = body
 
   if (values && !is2DArray(values)) {
@@ -101,9 +105,88 @@ export async function POST(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
 
-    // Fetch stored Google tokens (assuming only one record or pick latest)
+    // If caller did not supply values, auto-export all Registrants collection
+    let sheetValues: SheetValues | null = values as SheetValues | null
+    if (!sheetValues) {
+      // Paginate through all registrants
+      const all: any[] = []
+      const pageSize = 500
+      let page = 1
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const res = await payload.find({
+          collection: 'registrants',
+          limit: pageSize,
+          page,
+          sort: 'id',
+        })
+        all.push(...res.docs)
+        if (page >= res.totalPages) break
+        page++
+      }
+      if (all.length === 0) {
+        sheetValues = [['NO DATA']]
+      } else {
+        // Build dynamic header union of keys
+        const keySet = new Set<string>()
+        for (const doc of all) {
+          Object.keys(doc).forEach((k) => {
+            if (!['createdAt', 'updatedAt'].includes(k)) keySet.add(k)
+          })
+        }
+        const headers = Array.from(keySet)
+        // Preserve some preferred ordering by moving common fields to front
+        const preferred = [
+          'id',
+          'reg_id',
+          'name',
+          'name_arabic',
+          'gender',
+          'email',
+          'whatsapp',
+          'nationality',
+          'university',
+          'faculty',
+          'major',
+          'graduation_year',
+          'predicate',
+        ]
+        headers.sort((a, b) => {
+          const ia = preferred.indexOf(a)
+          const ib = preferred.indexOf(b)
+          if (ia === -1 && ib === -1) return a.localeCompare(b)
+          if (ia === -1) return 1
+          if (ib === -1) return -1
+          return ia - ib
+        })
+        const rows: Row[] = [headers]
+        for (const doc of all) {
+          const row: CellPrimitive[] = headers.map((h) => {
+            const val = (doc as any)[h]
+            if (val == null) return ''
+            if (typeof val === 'object') {
+              if (Array.isArray(val)) return JSON.stringify(val)
+              // Relationship: photo may be number or object
+              if (typeof (val as any).id !== 'undefined' && Object.keys(val).length <= 5)
+                return (val as any).id ?? ''
+              return JSON.stringify(val)
+            }
+            return val
+          })
+          rows.push(row)
+        }
+        sheetValues = rows
+      }
+    }
+
+    // Fetch stored Google token (optionally filtered by google_user_id or email)
+    const tokenWhere: any = {}
+    if (google_user_id) tokenWhere.google_user_id = { equals: google_user_id }
+    if (email) tokenWhere.email = { equals: email }
+
     const tokenDocs = await payload.find({
       collection: 'google-tokens',
+      where: Object.keys(tokenWhere).length ? tokenWhere : undefined,
       limit: 1,
       sort: '-updatedAt',
     })
@@ -114,8 +197,32 @@ export async function POST(req: NextRequest) {
       )
     }
     const token = tokenDocs.docs[0] as any
+    const originalAccessToken = token.accessToken
     const oauth2 = buildOAuthClient(token.accessToken, token.refreshToken)
     const sheets = google.sheets({ version: 'v4', auth: oauth2 })
+
+    // Ensure access token is current (auto refresh via google library if expired)
+    try {
+      const fresh = await oauth2.getAccessToken()
+      const newToken = fresh?.token
+      // If refreshed (different), update stored token & expiry
+      if (newToken && newToken !== originalAccessToken) {
+        const creds = oauth2.credentials
+        await payload.update({
+          collection: 'google-tokens',
+          id: token.id,
+          data: {
+            accessToken: newToken,
+            expiresAt: creds.expiry_date
+              ? new Date(creds.expiry_date).toISOString()
+              : token.expiresAt,
+            refreshToken: creds.refresh_token || token.refreshToken || null,
+          },
+        })
+      }
+    } catch (refreshErr) {
+      console.warn('Access token refresh check failed (continuing with existing token)', refreshErr)
+    }
 
     let targetSpreadsheetId: string | undefined = spreadsheetId
     let created = false
@@ -157,7 +264,7 @@ export async function POST(req: NextRequest) {
     } else {
       spreadsheetUrl =
         spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${targetSpreadsheetId}`
-      if (clear && values) {
+      if (clear && sheetValues) {
         try {
           await sheets.spreadsheets.values.clear({
             spreadsheetId: targetSpreadsheetId,
@@ -170,8 +277,8 @@ export async function POST(req: NextRequest) {
     }
 
     let writeMeta: { updatedRange?: string; updatedCells?: number } | undefined
-    if (Array.isArray(values) && values.length > 0) {
-      writeMeta = await writeValues(sheets, targetSpreadsheetId!, range, values as SheetValues)
+    if (Array.isArray(sheetValues) && sheetValues.length > 0) {
+      writeMeta = await writeValues(sheets, targetSpreadsheetId!, range, sheetValues as SheetValues)
     }
 
     // Upsert into google-sheets-creds collection (store latest for this spreadsheetId)
@@ -182,7 +289,8 @@ export async function POST(req: NextRequest) {
         where: { spreadsheetId: { equals: targetSpreadsheetId } },
         limit: 1,
       })
-      const rowsSynced = Array.isArray(values) && values.length > 0 ? values.length - 1 : 0
+      const rowsSynced =
+        Array.isArray(sheetValues) && sheetValues.length > 0 ? sheetValues.length - 1 : 0
       const recordData = {
         title,
         spreadsheetId: targetSpreadsheetId!,
@@ -235,3 +343,18 @@ export async function POST(req: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
+
+// Optional helper so akses via browser (GET) tidak hasilkan 405
+export async function GET() {
+  return NextResponse.json({
+    info: 'Endpoint export Google Sheet tersedia. Gunakan POST untuk mengekspor semua registrants.',
+    usage: {
+      method: 'POST',
+      url: '/api/export/create-or-update/sheet',
+      bodyExample: {
+        // kosongkan body untuk auto-export semua registrants
+      },
+      optionalFields: ['title', 'range', 'spreadsheetId', 'clear', 'google_user_id', 'email'],
+    },
+  })
+}

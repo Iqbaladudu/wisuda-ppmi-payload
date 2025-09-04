@@ -6,6 +6,7 @@ export const Media: CollectionConfig = {
     read: () => true,
     create: () => true,
     update: () => true,
+    delete: () => true,
   },
   fields: [
     {
