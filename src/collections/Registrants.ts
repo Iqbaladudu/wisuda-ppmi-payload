@@ -201,8 +201,6 @@ export const Registrants: CollectionConfig = {
   access: {
     read: () => true,
     create: () => true,
-    update: () => true,
-    delete: () => true,
   },
   versions: false,
   fields: [

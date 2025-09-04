@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { FormData } from '../../constants/constants'
+import type { FormData } from '../../constants/constants'
 
 interface StepContentProps {
   currentStep: number
@@ -18,16 +18,84 @@ interface StepContentProps {
 }
 
 const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingSyahadah, setUploadingSyahadah] = useState(false)
+  const [photoUploaded, setPhotoUploaded] = useState(false)
+  const [syahadahUploaded, setSyahadahUploaded] = useState(false)
+
+  // Sync upload states with form values
+  useEffect(() => {
+    const currentPhoto = form.getValues('photo')
+    const currentSyahadah = form.getValues('syahadah_photo')
+    
+    setPhotoUploaded(!!(currentPhoto && currentPhoto !== ''))
+    setSyahadahUploaded(!!(currentSyahadah && currentSyahadah !== ''))
+  }, [currentStep, form])
+
+  const uploadFile = async (file: File, fieldName: 'photo' | 'syahadah_photo') => {
+    try {
+      if (fieldName === 'photo') setUploadingPhoto(true)
+      else setUploadingSyahadah(true)
+
+      // First, upload the file
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const uploadResponse = await fetch('/api/media', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.message || 'Upload failed')
+      }
+
+      const uploadResult = await uploadResponse.json()
+      const mediaId = uploadResult.doc.id
+
+      // Then, update the alt field
+      const updateResponse = await fetch(`/api/media/${mediaId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          alt: file.name || 'Uploaded file',
+        }),
+      })
+
+      if (!updateResponse.ok) {
+        console.warn('Failed to update alt field, but file uploaded successfully')
+      }
+
+      form.setValue(fieldName, mediaId, { shouldValidate: false }) // Set the ID to the form field without validation
+      if (fieldName === 'photo') setPhotoUploaded(true)
+      else setSyahadahUploaded(true)
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Upload gagal: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      if (fieldName === 'photo') setUploadingPhoto(false)
+      else setUploadingSyahadah(false)
+    }
+  }
   switch (currentStep) {
     case 0:
       return (
         <div className="space-y-4">
+          <div className="bg-blue-50 p-3 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>Informasi:</strong> Field dengan tanda * wajib diisi. Pastikan semua data
+              terisi dengan benar sebelum melanjutkan ke step berikutnya.
+            </p>
+          </div>
           <FormField
             control={form.control}
             name="registrant_type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tipe Pendaftar</FormLabel>
+                <FormLabel>Tipe Pendaftar *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -49,9 +117,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nama Lengkap (Latin)</FormLabel>
+                <FormLabel>Nama Lengkap (Latin) *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan nama lengkap" {...field} />
+                  <Input placeholder="Contoh: Ahmad Abdullah Rahman" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -62,9 +130,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="name_arabic"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nama Lengkap (Arab)</FormLabel>
+                <FormLabel>Nama Lengkap (Arab) *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan nama Arab" {...field} />
+                  <Input placeholder="Contoh: أحمد عبدالله الرحمن" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -75,7 +143,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Jenis Kelamin</FormLabel>
+                <FormLabel>Jenis Kelamin *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -96,9 +164,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Email *</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Masukkan email" {...field} />
+                  <Input type="email" placeholder="Contoh: ahmad@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -109,9 +177,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="nationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Kewarganegaraan</FormLabel>
+                <FormLabel>Kewarganegaraan *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan kewarganegaraan" {...field} />
+                  <Input placeholder="Contoh: Indonesia, Malaysia, dll" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -122,9 +190,15 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="passport_number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nomor Paspor</FormLabel>
+                <FormLabel>
+                  Nomor Paspor{' '}
+                  {form.watch('nationality')?.toLowerCase() !== 'indonesia' &&
+                  form.watch('nationality')?.toLowerCase() !== 'wni'
+                    ? '*'
+                    : '(jika bukan WNI)'}
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan nomor paspor (jika bukan WNI)" {...field} />
+                  <Input placeholder="Contoh: A12345678" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,7 +211,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
               <FormItem>
                 <FormLabel>Nomor Telepon</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan nomor telepon" {...field} />
+                  <Input placeholder="Contoh: 08123456789" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -148,9 +222,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="whatsapp"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nomor WhatsApp</FormLabel>
+                <FormLabel>Nomor WhatsApp *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan nomor WhatsApp" {...field} />
+                  <Input placeholder="Contoh: 08123456789" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -161,7 +235,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             name="kekeluargaan"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Kekeluargaan</FormLabel>
+                <FormLabel>Kekeluargaan *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -354,6 +428,8 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       )
     case 2:
       const registrantType = form.watch('registrant_type')
+      const educationLevel = form.watch('education_level')
+      const continuingStudy = form.watch('continuing_study')
       return (
         <div className="space-y-4">
           {registrantType === 'SHOFI' && (
@@ -412,6 +488,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         type="number"
                         min="0"
                         max="100"
+                        step="0.01"
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value))}
                       />
@@ -420,19 +497,24 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="syahadah_photo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Foto Syahadah</FormLabel>
-                    <FormControl>
-                      <Input type="file" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Foto Syahadah</label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      uploadFile(file, 'syahadah_photo')
+                    }
+                  }}
+                  disabled={uploadingSyahadah}
+                />
+                {uploadingSyahadah && <p className="text-sm text-blue-600">Mengupload...</p>}
+                {syahadahUploaded && (
+                  <p className="text-sm text-green-600">Foto berhasil diupload</p>
                 )}
-              />
+              </div>
             </>
           )}
           {registrantType === 'TASHFIYAH' && (
@@ -559,7 +641,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
               </FormItem>
             )}
           />
-          {form.watch('education_level') === 'S1' && form.watch('continuing_study') === 'YES' && (
+          {educationLevel === 'S1' && continuingStudy === 'YES' && (
             <>
               <FormField
                 control={form.control}
@@ -624,19 +706,32 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
     case 3:
       return (
         <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="photo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Foto Diri</FormLabel>
-                <FormControl>
-                  <Input type="file" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="bg-blue-50 p-3 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>Informasi:</strong> Upload foto diri Anda dan setujui syarat & ketentuan untuk melanjutkan.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Foto Diri *</label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  uploadFile(file, 'photo')
+                }
+              }}
+              disabled={uploadingPhoto}
+            />
+            {uploadingPhoto && <p className="text-sm text-blue-600">Mengupload foto...</p>}
+            {photoUploaded && !uploadingPhoto && (
+              <p className="text-sm text-green-600">✓ Foto berhasil diupload</p>
             )}
-          />
+            {!photoUploaded && !uploadingPhoto && (
+              <p className="text-sm text-red-600">Foto belum diupload</p>
+            )}
+          </div>
           <FormField
             control={form.control}
             name="terms_agreement"
@@ -646,7 +741,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>Persetujuan Syarat & Ketentuan</FormLabel>
+                  <FormLabel>Persetujuan Syarat & Ketentuan *</FormLabel>
                 </div>
                 <FormMessage />
               </FormItem>

@@ -1,50 +1,118 @@
 import * as z from 'zod'
 
-// Zod schema for validation (simplified based on Registrants.ts)
+// Helper untuk validasi Arabic (mirror dari Registrants.ts) - lebih permisif
+const isArabic = (s?: string) => {
+  if (!s || s.trim() === '') return true // Allow empty for now
+  // Check if string contains at least one Arabic character
+  return !!s?.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/)
+}
+
+// Schema Zod yang disinkronkan dengan Registrants.ts
 export const formSchema = z
   .object({
-    registrant_type: z.string().min(1, 'Tipe pendaftar wajib dipilih'),
+    registrant_type: z.enum(['SHOFI', 'TASHFIYAH', 'ATRIBUT']),
     name: z
       .string()
       .min(1, 'Nama lengkap wajib diisi')
-      .refine((val) => val.trim().split(/\s+/).length >= 3, 'Nama Latin harus minimal 3 kata'),
+      .refine((val) => val.trim().split(/\s+/).length >= 2, 'Nama Latin harus minimal 2 kata'),
     name_arabic: z
       .string()
-      .min(3, 'Nama Arab harus minimal 3 karakter')
-      .refine(
-        (val) => /^[\u0600-\u06FF\s\ufb50-\ufdff\ufe70-\ufeff]+$/u.test(val),
-        'Nama Arab harus hanya mengandung karakter Arab valid',
-      ),
-    gender: z.string().min(1, 'Jenis kelamin wajib dipilih'),
+      .min(3, 'Nama Arab minimal 3 karakter')
+      .refine(isArabic, 'Nama Arab harus hanya mengandung karakter Arab valid'),
+    gender: z.enum(['L', 'P']),
     email: z.string().email('Email tidak valid'),
     nationality: z.string().min(1, 'Kewarganegaraan wajib diisi'),
-    passport_number: z.string().optional(),
+    passport_number: z.string().default(''),
     phone_number: z.string().optional(),
     whatsapp: z.string().min(1, 'WhatsApp wajib diisi'),
-    kekeluargaan: z.string().optional(),
-    university: z.string().min(1, 'Universitas wajib dipilih'),
-    education_level: z.string().min(1, 'Jenjang pendidikan wajib dipilih'),
-    first_enrollment_year: z.number().min(1900).max(2100),
-    graduation_year: z.number().min(1900).max(2100),
-    faculty: z.string().min(1, 'Fakultas wajib dipilih'),
-    major: z.string().min(1, 'Jurusan wajib dipilih'),
-    quran_memorization: z.number().min(0).max(30),
-    continuing_study: z.string().optional(),
-    kulliyah: z.string().optional(),
-    syubah: z.string().optional(),
+    kekeluargaan: z
+      .enum([
+        'KMM',
+        'KMB',
+        'KMJ',
+        'KPJ',
+        'KMA',
+        'KSW',
+        'KEMASS',
+        'KKS',
+        'KSMR',
+        'KMNTB',
+        'KMKM',
+        'IKMAL',
+        'GAMAJATIM',
+        'HMMSU',
+        'FOSGAMA',
+      ])
+      .default('KMM'),
+    university: z.enum(['AL_AZHAR', 'OTHER']),
+    education_level: z.enum(['S1', 'S2', 'S3']),
+    first_enrollment_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
+    graduation_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
+    faculty: z.enum([
+      'USHULUDDIN',
+      'SYARIAH_QANUN',
+      'BAHASA_ARAB',
+      'DIRASAT_BANIN',
+      'DIRASAT_BANAT',
+      'OTHER',
+    ]),
+    major: z.enum([
+      'TAFSIR_ULUMUL_QURAN',
+      'HADITS_ULUM',
+      'AQIDAH_FALSAFAH',
+      'DAKWAH_TSAQOFAH',
+      'SYARIAH_ISLAMIYAH',
+      'SYARIAH_QANUN',
+      'BAHASA_ARAB_AMMAH',
+      'TARIKH_HADHARAH',
+      'OTHER',
+    ]),
+    quran_memorization: z.number().min(0).max(30, 'Hafalan Quran 0-30 juz'),
+    continuing_study: z.enum(['YES', 'NO', 'UNDECIDED']).default('NO'),
+    kulliyah: z
+      .enum(['ULUUM_ISLAMIYAH', 'DIRASAT_ULYA', 'DIRASAT_ISLAMIYAH_ARABIAH', 'OTHER', 'TIDAK ADA'])
+      .default('TIDAK ADA'),
+    syubah: z
+      .enum([
+        'TAFSIR_ULUMUL_QURAN',
+        'HADITS_ULUM',
+        'AQIDAH_FALSAFAH',
+        'FIQH_AM',
+        'FIQIH_MUQARRAN',
+        'USHUL_FIQH',
+        'LUGHAYWIYAT',
+        'BALAGHAH_NAQD',
+        'ADAB_NAQD',
+        'OTHER',
+        'TIDAK ADA',
+      ])
+      .default('TIDAK ADA'),
     // Type-specific fields
-    shofi_ready_attend: z.boolean().optional(),
-    predicate: z.string().optional(),
-    cumulative_score: z.number().optional(),
-    syahadah_photo: z.any().optional(),
-    tashfiyah_ready_attend: z.boolean().optional(),
-    tashfiyah_ready_submit_proof: z.boolean().optional(),
-    tashfiyah_no_graduation_if_failed: z.boolean().optional(),
-    tashfiyah_still_get_attributes: z.boolean().optional(),
-    atribut_ready_attend: z.boolean().optional(),
-    attribute_package: z.string().optional(),
+    shofi_ready_attend: z.boolean().default(false),
+    predicate: z
+      .enum([
+        'MUMTAZ_MMS',
+        'MUMTAZ',
+        'JAYYID_JIDDAN_MMS',
+        'JAYYID_JIDDAN',
+        'JAYYID',
+        'MAQBUL',
+        'RASIB',
+        'DHAIF',
+      ])
+      .default('MUMTAZ'),
+    cumulative_score: z.number().min(0).max(100, 'Nilai 0-100').default(0),
+    syahadah_photo: z.string().default(''),
+    tashfiyah_ready_attend: z.boolean().default(false),
+    tashfiyah_ready_submit_proof: z.boolean().default(false),
+    tashfiyah_no_graduation_if_failed: z.boolean().default(false),
+    tashfiyah_still_get_attributes: z.boolean().default(false),
+    atribut_ready_attend: z.boolean().default(false),
+    attribute_package: z
+      .enum(['SELENDANG_PIN_MEDALI', 'PLAKAT', 'LENGKAP'])
+      .default('SELENDANG_PIN_MEDALI'),
     // General
-    photo: z.any().optional(),
+    photo: z.string().default(''), // ID file setelah upload
     terms_agreement: z
       .boolean()
       .refine((val) => val === true, 'Persetujuan syarat & ketentuan wajib dicentang'),
@@ -61,45 +129,31 @@ export const formSchema = z
       }
       return true
     },
-    {
-      message: 'Nomor paspor wajib diisi jika bukan WNI',
-      path: ['passport_number'],
-    },
+    { message: 'Nomor paspor wajib jika bukan WNI', path: ['passport_number'] },
   )
   .refine(
     (data) => {
       if (data.education_level === 'S1') {
         if (!data.continuing_study) return false
         if (data.continuing_study === 'YES') {
-          if (!data.kulliyah || data.kulliyah === '') return false
-          if (!data.syubah || data.syubah === '') return false
+          if (!data.kulliyah || data.kulliyah === 'TIDAK ADA') return false
+          if (!data.syubah || data.syubah === 'TIDAK ADA') return false
         }
       }
       return true
     },
-    {
-      message: 'Field melanjutkan studi dan detailnya wajib diisi untuk S1',
-      path: ['continuing_study'],
-    },
+    { message: 'Field melanjutkan studi dan detailnya wajib untuk S1', path: ['continuing_study'] },
   )
   .refine(
     (data) => {
       if (data.registrant_type === 'SHOFI') {
         if (!data.shofi_ready_attend) return false
         if (!data.predicate) return false
-        if (!data.syahadah_photo) return false
-        if (
-          data.cumulative_score != null &&
-          (data.cumulative_score < 0 || data.cumulative_score > 100)
-        )
-          return false
+        if (!data.syahadah_photo || data.syahadah_photo === '') return false
       }
       return true
     },
-    {
-      message: 'Field Shofi wajib diisi',
-      path: ['shofi_ready_attend'],
-    },
+    { message: 'Field Shofi wajib diisi', path: ['shofi_ready_attend'] },
   )
   .refine(
     (data) => {
@@ -111,23 +165,7 @@ export const formSchema = z
       }
       return true
     },
-    {
-      message: 'Field Tashfiyah wajib diisi',
-      path: ['tashfiyah_ready_attend'],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.registrant_type === 'ATRIBUT') {
-        if (!data.atribut_ready_attend) return false
-        if (!data.attribute_package) return false
-      }
-      return true
-    },
-    {
-      message: 'Field Atribut wajib diisi',
-      path: ['atribut_ready_attend'],
-    },
+    { message: 'Field Tashfiyah wajib diisi', path: ['tashfiyah_ready_attend'] },
   )
 
 export type FormData = z.infer<typeof formSchema>

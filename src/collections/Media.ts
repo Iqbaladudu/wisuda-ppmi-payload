@@ -4,12 +4,14 @@ export const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
+    create: () => true,
+    update: () => true,
   },
   fields: [
     {
       name: 'alt',
       type: 'text',
-      required: true,
+      required: false,
     },
   ],
   upload: true,

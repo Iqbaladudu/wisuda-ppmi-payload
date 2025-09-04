@@ -22,6 +22,8 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Registrants],
+  cors: [process.env.CORS_ORIGIN || 'http://localhost:3000'],
+  csrf: [process.env.CSRF_ORIGIN || 'http://localhost:3000'],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
