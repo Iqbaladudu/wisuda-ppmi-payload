@@ -229,6 +229,15 @@ export const Registrants: CollectionConfig = {
       },
     },
     {
+      type: 'ui',
+      name: 'sendWa',
+      admin: {
+        components: {
+          Cell: 'src/app/(payload)/admin/components/SendWaCell.tsx',
+        },
+      },
+    },
+    {
       type: 'select',
       name: 'gender',
       label: 'Jenis Kelamin',

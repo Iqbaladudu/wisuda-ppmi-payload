@@ -10,6 +10,8 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Registrants } from './collections/Registrants'
+import GoogleTokens from './collections/GoogleTokens'
+import GoogleSheets from './collections/GoogleSheets'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -21,7 +23,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Registrants],
+  collections: [Users, Media, Registrants, GoogleTokens, GoogleSheets],
   cors: [process.env.CORS_ORIGIN || 'http://localhost:3000'],
   csrf: [process.env.CSRF_ORIGIN || 'http://localhost:3000'],
   editor: lexicalEditor(),

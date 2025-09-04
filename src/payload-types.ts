@@ -70,6 +70,8 @@ export interface Config {
     users: User;
     media: Media;
     registrants: Registrant;
+    'google-tokens': GoogleToken;
+    'google-sheets-creds': GoogleSheetsCred;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -79,6 +81,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     registrants: RegistrantsSelect<false> | RegistrantsSelect<true>;
+    'google-tokens': GoogleTokensSelect<false> | GoogleTokensSelect<true>;
+    'google-sheets-creds': GoogleSheetsCredsSelect<false> | GoogleSheetsCredsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -253,6 +257,47 @@ export interface Registrant {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-tokens".
+ */
+export interface GoogleToken {
+  id: number;
+  google_user_id: string;
+  email: string;
+  name: string;
+  accessToken: string;
+  refreshToken?: string | null;
+  expiresAt: string;
+  refreshExpiresAt?: string | null;
+  rawResponse?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-sheets-creds".
+ */
+export interface GoogleSheetsCred {
+  id: number;
+  title: string;
+  spreadsheetId: string;
+  spreadsheetUrl: string;
+  lastRange?: string | null;
+  lastUpdatedCells?: number | null;
+  rowsSynced?: number | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -269,6 +314,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'registrants';
         value: number | Registrant;
+      } | null)
+    | ({
+        relationTo: 'google-tokens';
+        value: number | GoogleToken;
+      } | null)
+    | ({
+        relationTo: 'google-sheets-creds';
+        value: number | GoogleSheetsCred;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -391,6 +444,37 @@ export interface RegistrantsSelect<T extends boolean = true> {
   photo?: T;
   terms_agreement?: T;
   reg_id?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-tokens_select".
+ */
+export interface GoogleTokensSelect<T extends boolean = true> {
+  google_user_id?: T;
+  email?: T;
+  name?: T;
+  accessToken?: T;
+  refreshToken?: T;
+  expiresAt?: T;
+  refreshExpiresAt?: T;
+  rawResponse?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-sheets-creds_select".
+ */
+export interface GoogleSheetsCredsSelect<T extends boolean = true> {
+  title?: T;
+  spreadsheetId?: T;
+  spreadsheetUrl?: T;
+  lastRange?: T;
+  lastUpdatedCells?: T;
+  rowsSynced?: T;
+  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
