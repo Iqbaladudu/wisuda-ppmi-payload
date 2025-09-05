@@ -131,6 +131,19 @@
   .animate-fadeInUp { animation: fadeInUp .9s cubic-bezier(.4,.8,.2,1) both; }
   .animate-grow { animation: grow 1.2s cubic-bezier(.4,.8,.2,1) both; }
   .animate-expandWidth { animation: expandWidth 1.4s cubic-bezier(.4,.8,.2,1) both; }
+
+  /* Connected background system */
+  .connected-root { position: relative; }
+  .connected-root:before { content: ""; position: fixed; inset: 0; z-index: -60; background:#140A08; }
+  .connected-root:after { content: ""; position: fixed; inset:0; pointer-events:none; z-index:-59; opacity:.22; background-image:
+      repeating-linear-gradient(0deg,rgba(255,255,255,0.06) 0 1px,transparent 1px 160px),
+      repeating-linear-gradient(90deg,rgba(255,255,255,0.06) 0 1px,transparent 1px 160px),
+      radial-gradient(circle at 28% 30%,rgba(230,140,90,0.18),transparent 70%);
+    mix-blend-mode:overlay;
+  }
+  .section-connected { position:relative; }
+  .section-connected:not(:first-child)::before { content:""; position:absolute; top:0; left:0; right:0; height:72px; background:linear-gradient(to bottom,rgba(20,10,8,0.9),rgba(20,10,8,0)); z-index:-1; pointer-events:none; }
+  .section-connected:not(:last-child)::after { content:""; position:absolute; bottom:0; left:0; right:0; height:90px; background:linear-gradient(to top,rgba(20,10,8,0.9),rgba(20,10,8,0)); z-index:-1; pointer-events:none; }
 }
 
 @layer base {

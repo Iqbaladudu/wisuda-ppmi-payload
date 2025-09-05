@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic'
 import HeroCountdown from '@/components/home/HeroCountdown'
 import RegistrantsByMajor from '@/components/home/RegistrantsByMajor'
 import YearlyStats from '@/components/home/YearlyStats'
+import HeroAlternative from '@/components/home/HeroAlternative'
+import SectionBG from '@/components/home/SectionBG'
 
 const SimpleSlider = dynamic(
   () => import('@/components/home/SimpleSlider').then((mod) => ({ default: mod.SimpleSlider })),
@@ -108,15 +110,19 @@ const DUMMY_TESTIMONI = [
 
 export default function HomePage() {
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       {/* Hero */}
-      <HeroCountdown date={new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString()} />
+      <div className="section-connected">
+        <HeroAlternative date={new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString()} />
+      </div>
 
       {/* Registrants per major (client) */}
-      <RegistrantsByMajor />
+      <div className="section-connected">
+        <RegistrantsByMajor />
+      </div>
 
       {/* Venue slider */}
-      <section className="py-16 md:py-24">
+      <SectionBG className="section-connected">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-[#FCEFEA] to-white bg-clip-text text-transparent">
@@ -134,12 +140,10 @@ export default function HomePage() {
             )}
           />
         </div>
-      </section>
+      </SectionBG>
 
       {/* Documentation slider */}
-      <section className="relative py-16 md:py-24">
-        {/* ambient glow */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(232,122,69,0.18),transparent_65%)]" />
+      <SectionBG className="section-connected" radialPos="25%_32%">
         <div className="mx-auto max-w-6xl px-4 relative">
           <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -216,10 +220,10 @@ export default function HomePage() {
             )}
           />
         </div>
-      </section>
+      </SectionBG>
 
       {/* After movie slider */}
-      <section className="py-16 md:py-24">
+      <SectionBG className="section-connected">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl md:tex-2xl font-bold tracking-tight bg-gradient-to-r from-[#FCEFEA] to-white bg-clip-text text-transparent">
@@ -244,14 +248,15 @@ export default function HomePage() {
             )}
           />
         </div>
-      </section>
+      </SectionBG>
 
       {/* Yearly stats (client) */}
-      <YearlyStats />
+      <div className="section-connected">
+        <YearlyStats />
+      </div>
 
       {/* Testimonials */}
-      <section className="relative py-16 md:py-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(224,124,69,0.22),transparent_65%)]" />
+      <SectionBG className="section-connected" radialPos="60%_30%">
         <div className="mx-auto max-w-6xl px-4 relative">
           <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
@@ -326,7 +331,7 @@ export default function HomePage() {
             )}
           />
         </div>
-      </section>
+      </SectionBG>
     </div>
   )
 }

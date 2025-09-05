@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import SectionBG from './SectionBG'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,11 @@ interface CountItem {
   count: number
 }
 
+interface EduItem {
+  level: string
+  count: number
+}
+
 async function fetchCounts(): Promise<CountItem[]> {
   try {
     const response = await fetch('/api/registrants-by-major')
@@ -28,15 +34,32 @@ async function fetchCounts(): Promise<CountItem[]> {
   }
 }
 
+async function fetchEdu(): Promise<EduItem[]> {
+  try {
+    const response = await fetch('/api/registrants-by-education')
+    if (!response.ok) throw new Error('Failed to fetch education stats')
+    return await response.json()
+  } catch (e) {
+    console.error('Error fetching education stats:', e)
+    return []
+  }
+}
+
 export const RegistrantsByMajor = () => {
   const [search, setSearch] = React.useState('')
   const [sort, setSort] = React.useState<
     'COUNT_DESC' | 'COUNT_ASC' | 'ALPHA_ASC' | 'ALPHA_DESC' | 'PERCENT_DESC'
   >('COUNT_DESC')
-  const { data: counts = [], isLoading: loading } = useQuery({
+  const { data: counts = [], isLoading: loadingMajors } = useQuery({
     queryKey: ['registrants-by-major'],
     queryFn: fetchCounts,
     refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+  })
+  const { data: edu = [], isLoading: loadingEdu } = useQuery({
+    queryKey: ['registrants-by-education'],
+    queryFn: fetchEdu,
+    refetchInterval: 45000,
     refetchOnWindowFocus: true,
   })
 
@@ -87,14 +110,14 @@ export const RegistrantsByMajor = () => {
   }, [counts, search, sort, max])
 
   const ContentGrid = () => (
-    <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {filtered.map((c, idx) => {
         const percent = (c.count / max) * 100
         return (
           <div
             key={c.major}
             className={cn(
-              'group relative overflow-hidden rounded-2xl border border-white/12 bg-white/[0.08] p-4 backdrop-blur-md shadow-[0_4px_18px_-5px_rgba(0,0,0,0.55)] transition',
+              'group relative overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] p-5 backdrop-blur-md shadow-[0_4px_18px_-5px_rgba(0,0,0,0.55)] transition',
               'before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-0 group-hover:before:opacity-100 before:transition',
             )}
             style={{ animationDelay: `${idx * 40}ms` }}
@@ -113,9 +136,9 @@ export const RegistrantsByMajor = () => {
                   {c.count}
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/5 relative">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/5 relative">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#E07C45] via-[#D9683A] to-[#B8451A] shadow-[0_0_0_1px_rgba(255,255,255,0.15)_inset] transition-[width] duration-700 ease-out"
+                  className="h-full rounded-full bg-gradient-to-r from-[#E07C45] via-[#D9683A] to-[#B8451A] shadow-[0_0_0_1px_rgba(255,255,255,0.18)_inset] transition-[width] duration-700 ease-out"
                   style={{ width: `${percent}%` }}
                 />
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.4),transparent_60%)]" />
@@ -132,103 +155,139 @@ export const RegistrantsByMajor = () => {
     </div>
   )
 
-  const SectionHeader = () => (
-    <div className="mb-12 space-y-8 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[11px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-          Live Enrollment Stats
-          <span className="text-white/60">{new Date().getFullYear()}</span>
-        </div>
-        <h2 className="mx-auto max-w-2xl font-extrabold tracking-tight text-3xl md:text-5xl bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent drop-shadow-md">
-          Update Pendaftar per Jurusan
-        </h2>
-        <p className="mx-auto max-w-xl text-xs md:text-sm leading-relaxed text-[#FAD9CC]/90 font-medium">
-          Data real-time dari pendaftar yang telah mengisi formulir. Visualisasi membantu panitia
-          memonitor distribusi fakultas dan jurusan.
-        </p>
-      </div>
-      <div className="mx-auto flex flex-col gap-5">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-medium text-white/70">
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
-            <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A]" />
-            <span>Proporsi Jurusan</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
-            <span className="tabular-nums font-semibold">Total {total}</span>
-            <span className="text-white/50">pendaftar</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
-            <span className="tabular-nums font-semibold">{filtered.length}</span>
-            <span className="text-white/50">jurusan tampil</span>
-          </div>
-        </div>
-        <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-center">
-          <div className="relative w-full md:w-72">
-            <Input
-              placeholder="Cari jurusan..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="border-white/20 bg-white/10 placeholder:text-white/40 text-white focus-visible:ring-white/30"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 text-xs"
-                aria-label="Clear search"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          <div className="w-full md:w-64">
-            <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-              <SelectTrigger className="border-white/20 bg-white/10 text-white focus:ring-white/30">
-                <SelectValue placeholder="Urutkan" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#2B1816] text-white border-white/10">
-                <SelectItem value="COUNT_DESC">Jumlah Terbanyak</SelectItem>
-                <SelectItem value="COUNT_ASC">Jumlah Terkecil</SelectItem>
-                <SelectItem value="PERCENT_DESC">Persentase Tertinggi</SelectItem>
-                <SelectItem value="ALPHA_ASC">A-Z</SelectItem>
-                <SelectItem value="ALPHA_DESC">Z-A</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  if (loading) {
+  const SectionHeader = () => {
+    const eduTotal = edu.reduce((a, b) => a + b.count, 0)
     return (
-      <section
-        className={
-          'relative isolate py-20 md:py-28 text-white before:absolute before:inset-0 before:-z-20 before:bg-[radial-gradient(circle_at_60%_35%,#D68A62_0%,#4A2820_45%,#241311_80%)] before:opacity-90 after:absolute after:inset-0 after:-z-10 after:bg-[linear-gradient(to_bottom_right,rgba(255,255,255,0.05),transparent_50%),repeating-linear-gradient(45deg,rgba(255,255,255,0.04)_0_10px,transparent_10px_20px)]'
-        }
-      >
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+      <div className="mb-14 space-y-10 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[11px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            Live Enrollment Stats
+            <span className="text-white/60">{new Date().getFullYear()}</span>
+          </div>
+          <h2 className="mx-auto max-w-2xl font-extrabold tracking-tight text-3xl md:text-5xl bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent drop-shadow-md">
+            Update Pendaftar per Jurusan
+          </h2>
+          <p className="mx-auto max-w-xl text-xs md:text-sm leading-relaxed text-[#FAD9CC]/90 font-medium">
+            Data real-time dari pendaftar yang telah mengisi formulir. Visualisasi membantu panitia
+            memonitor distribusi fakultas dan jurusan.
+          </p>
+        </div>
+        <div className="mx-auto flex flex-col gap-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-medium text-white/70">
+            <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
+              <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A]" />
+              <span>Proporsi Jurusan</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
+              <span className="tabular-nums font-semibold">Total {total}</span>
+              <span className="text-white/50">pendaftar</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
+              <span className="tabular-nums font-semibold">{filtered.length}</span>
+              <span className="text-white/50">jurusan tampil</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
+              <span className="tabular-nums font-semibold">Jenjang {eduTotal}</span>
+              <span className="text-white/50">total</span>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-5 md:items-center md:justify-center">
+            <div className="relative w-full md:w-72">
+              <Input
+                placeholder="Cari jurusan..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border-white/20 bg-white/10 placeholder:text-white/40 text-white focus-visible:ring-white/30"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 text-xs"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className="w-full md:w-64">
+              <Select value={sort} onValueChange={(v: any) => setSort(v)}>
+                <SelectTrigger className="border-white/20 bg-white/10 text-white focus:ring-white/30">
+                  <SelectValue placeholder="Urutkan" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#2B1816] text-white border-white/10">
+                  <SelectItem value="COUNT_DESC">Jumlah Terbanyak</SelectItem>
+                  <SelectItem value="COUNT_ASC">Jumlah Terkecil</SelectItem>
+                  <SelectItem value="PERCENT_DESC">Persentase Tertinggi</SelectItem>
+                  <SelectItem value="ALPHA_ASC">A-Z</SelectItem>
+                  <SelectItem value="ALPHA_DESC">Z-A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Education level mini cards */}
+          <div className="flex flex-wrap justify-center gap-4">
+            {(loadingEdu
+              ? [
+                  { level: 'S1', count: 0 },
+                  { level: 'S2', count: 0 },
+                  { level: 'S3', count: 0 },
+                ]
+              : edu
+            ).map((e) => {
+              const pct = eduTotal ? Math.round((e.count / eduTotal) * 100) : 0
+              return (
+                <div
+                  key={e.level}
+                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md shadow-inner shadow-black/40 min-w-[120px] text-left"
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.15),transparent_55%)]" />
+                  <div className="relative flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">
+                      {e.level}
+                    </span>
+                    <span className="text-xl font-bold tabular-nums tracking-tight">
+                      {loadingEdu ? '—' : e.count}
+                    </span>
+                    <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#E07C45] via-[#D9683A] to-[#B8451A]"
+                        style={{ width: loadingEdu ? '0%' : `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-white/50 font-medium">{pct}%</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadingMajors) {
+    return (
+      <SectionBG className="py-24 md:py-32">
+        <div className="mx-auto max-w-7xl px-5 md:px-8 relative">
           <SectionHeader />
           <LoadingSkeleton />
         </div>
-      </section>
+      </SectionBG>
     )
   }
 
   return (
-    <section
-      className={
-        'relative isolate py-20 md:py-28 text-white before:absolute before:inset-0 before:-z-20 before:bg-[radial-gradient(circle_at_35%_40%,#D68A62_0%,#4A2820_45%,#241311_80%)] before:opacity-95 after:absolute after:inset-0 after:-z-10 after:bg-[linear-gradient(to_bottom_right,rgba(255,255,255,0.05),transparent_50%),repeating-linear-gradient(45deg,rgba(255,255,255,0.04)_0_10px,transparent_10px_20px)]'
-      }
-    >
+    <SectionBG className="py-24 md:py-32">
       <div className="pointer-events-none absolute -right-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#F9C6B0]/30 via-[#E89F7C]/25 to-transparent blur-3xl" />
       <div className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-gradient-to-tr from-[#E07C45]/25 to-transparent blur-3xl" />
       <div className="mx-auto max-w-7xl px-5 md:px-8 relative">
         <SectionHeader />
         <ContentGrid />
       </div>
-    </section>
+    </SectionBG>
   )
 }
 

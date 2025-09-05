@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import SectionBG from './SectionBG'
 import { useQuery } from '@tanstack/react-query'
 import {
   BarChart,
@@ -74,8 +75,8 @@ export const YearlyStats = () => {
 
   if (loading) {
     return (
-      <section className="py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-4">
+      <SectionBG>
+        <div className="mx-auto max-w-6xl px-4 relative">
           <HeaderSkeleton />
           <div className="mt-8 grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -87,14 +88,14 @@ export const YearlyStats = () => {
           </div>
           <div className="mt-10 h-[360px] w-full rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm animate-pulse" />
         </div>
-      </section>
+      </SectionBG>
     )
   }
 
   if (!stats.length) {
     return (
-      <section className="py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-4 text-center">
+      <SectionBG>
+        <div className="mx-auto max-w-6xl px-4 text-center relative">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#FCEFEA] to-white bg-clip-text text-transparent">
             Statistik Wisudawan per Tahun
           </h2>
@@ -102,15 +103,15 @@ export const YearlyStats = () => {
             Belum ada data yang dapat ditampilkan.
           </p>
         </div>
-      </section>
+      </SectionBG>
     )
   }
 
   const max = Math.max(...stats.map((s) => s.total), 1)
 
   return (
-    <section className="py-16 md:py-24" aria-labelledby="yearly-stats-heading">
-      <div className="mx-auto max-w-6xl px-4">
+    <SectionBG ariaLabelledBy="yearly-stats-heading" variant="withGrid">
+      <div className="mx-auto max-w-6xl px-4 relative">
         <Header />
 
         {/* KPI Cards */}
@@ -282,7 +283,7 @@ export const YearlyStats = () => {
           </div>
         </div>
       </div>
-    </section>
+    </SectionBG>
   )
 }
 
