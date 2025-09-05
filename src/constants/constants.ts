@@ -7,6 +7,34 @@ const isArabic = (s?: string) => {
   return !!s?.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/)
 }
 
+// Mapping negara ke kode telepon
+const countryPhoneCodes: Record<string, string> = {
+  Indonesia: '+62',
+  Egypt: '+20',
+  'Saudi Arabia': '+966',
+  'United Arab Emirates': '+971',
+  Jordan: '+962',
+  Morocco: '+212',
+  Tunisia: '+216',
+  Algeria: '+213',
+  Malaysia: '+60',
+  Singapore: '+65',
+  Pakistan: '+92',
+  Bangladesh: '+880',
+  Turkey: '+90',
+  Iran: '+98',
+  Iraq: '+964',
+  Syria: '+963',
+  Yemen: '+967',
+  Oman: '+968',
+  Kuwait: '+965',
+  Qatar: '+974',
+  Bahrain: '+973',
+  Lebanon: '+961',
+  Palestine: '+970',
+  // Tambah lebih jika perlu
+}
+
 // Schema Zod yang disinkronkan dengan Registrants.ts
 export const formSchema = z
   .object({
@@ -14,7 +42,7 @@ export const formSchema = z
     name: z
       .string()
       .min(1, 'Nama lengkap wajib diisi')
-      .refine((val) => val.trim().split(/\s+/).length >= 2, 'Nama Latin harus minimal 2 kata'),
+      .refine((val) => val.trim().split(/\s+/).length >= 3, 'Nama Latin harus minimal 3 kata'),
     name_arabic: z
       .string()
       .min(3, 'Nama Arab minimal 3 karakter')
@@ -31,6 +59,7 @@ export const formSchema = z
         'KMB',
         'KMJ',
         'KPJ',
+        'KPMJB',
         'KMA',
         'KSW',
         'KEMASS',
@@ -44,49 +73,16 @@ export const formSchema = z
         'FOSGAMA',
       ])
       .default('KMM'),
-    university: z.enum(['AL_AZHAR', 'OTHER']),
+    university: z.string().min(1, 'Universitas wajib diisi'),
     education_level: z.enum(['S1', 'S2', 'S3']),
     first_enrollment_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
     graduation_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
-    faculty: z.enum([
-      'USHULUDDIN',
-      'SYARIAH_QANUN',
-      'BAHASA_ARAB',
-      'DIRASAT_BANIN',
-      'DIRASAT_BANAT',
-      'OTHER',
-    ]),
-    major: z.enum([
-      'TAFSIR_ULUMUL_QURAN',
-      'HADITS_ULUM',
-      'AQIDAH_FALSAFAH',
-      'DAKWAH_TSAQOFAH',
-      'SYARIAH_ISLAMIYAH',
-      'SYARIAH_QANUN',
-      'BAHASA_ARAB_AMMAH',
-      'TARIKH_HADHARAH',
-      'OTHER',
-    ]),
+    faculty: z.string().min(1, 'Fakultas wajib diisi'),
+    major: z.string().min(1, 'Jurusan wajib diisi'),
     quran_memorization: z.number().min(0).max(30, 'Hafalan Quran 0-30 juz'),
     continuing_study: z.enum(['YES', 'NO', 'UNDECIDED']).default('NO'),
-    kulliyah: z
-      .enum(['ULUUM_ISLAMIYAH', 'DIRASAT_ULYA', 'DIRASAT_ISLAMIYAH_ARABIAH', 'OTHER', 'TIDAK ADA'])
-      .default('TIDAK ADA'),
-    syubah: z
-      .enum([
-        'TAFSIR_ULUMUL_QURAN',
-        'HADITS_ULUM',
-        'AQIDAH_FALSAFAH',
-        'FIQH_AM',
-        'FIQIH_MUQARRAN',
-        'USHUL_FIQH',
-        'LUGHAYWIYAT',
-        'BALAGHAH_NAQD',
-        'ADAB_NAQD',
-        'OTHER',
-        'TIDAK ADA',
-      ])
-      .default('TIDAK ADA'),
+    kulliyah: z.string().default('TIDAK ADA'),
+    syubah: z.string().default('TIDAK ADA'),
     // Type-specific fields
     shofi_ready_attend: z.boolean().default(false),
     predicate: z
@@ -101,7 +97,7 @@ export const formSchema = z
         'DHAIF',
       ])
       .default('MUMTAZ'),
-    cumulative_score: z.number().min(0).max(100, 'Nilai 0-100').default(0),
+    cumulative_score: z.number().min(0).max(100, 'Nilai 0-100').nullable().default(null),
     syahadah_photo: z.string().default(''),
     tashfiyah_ready_attend: z.boolean().default(false),
     tashfiyah_ready_submit_proof: z.boolean().default(false),
@@ -122,7 +118,6 @@ export const formSchema = z
       if (
         data.nationality &&
         data.nationality.toLowerCase() !== 'indonesia' &&
-        data.nationality.toLowerCase() !== 'wni' &&
         !data.passport_number
       ) {
         return false
@@ -130,6 +125,16 @@ export const formSchema = z
       return true
     },
     { message: 'Nomor paspor wajib jika bukan WNI', path: ['passport_number'] },
+  )
+  .refine(
+    (data) => {
+      const code = countryPhoneCodes[data.nationality]
+      if (code && data.whatsapp && !data.whatsapp.startsWith(code)) {
+        return false
+      }
+      return true
+    },
+    { message: 'Nomor WhatsApp harus dimulai dengan kode negara yang sesuai', path: ['whatsapp'] },
   )
   .refine(
     (data) => {

@@ -267,11 +267,10 @@ export const Registrants: CollectionConfig = {
 
     // Education fields
     {
-      type: 'select',
+      type: 'text',
       name: 'university',
       label: 'Universitas',
-      options: University,
-      defaultValue: 'AL_AZHAR',
+      defaultValue: 'Al Azhar',
       required: true,
     },
     {
@@ -303,10 +302,9 @@ export const Registrants: CollectionConfig = {
       index: true,
     },
     {
-      type: 'select',
+      type: 'text',
       name: 'faculty',
       label: 'Fakultas',
-      options: Faculty,
       required: true,
       index: true,
     },
@@ -387,7 +385,7 @@ export const Registrants: CollectionConfig = {
     {
       type: 'upload',
       name: 'syahadah_photo',
-      label: 'Foto Syahadah',
+      label: 'Foto Bukti Kelulusan (Syahadah/Kasyfu/Nilai Tingkat 4)',
       relationTo: 'media',
       admin: { condition: (data) => data?.registrant_type === 'SHOFI' },
     },

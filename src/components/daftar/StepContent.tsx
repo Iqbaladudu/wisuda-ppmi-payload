@@ -19,11 +19,29 @@ interface StepContentProps {
   form: UseFormReturn<FormData>
 }
 
+interface Country {
+  code: string
+  name: string
+  region: string
+}
+
 const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [uploadingSyahadah, setUploadingSyahadah] = useState(false)
   const [photoUploaded, setPhotoUploaded] = useState(false)
   const [syahadahUploaded, setSyahadahUploaded] = useState(false)
+  const [countries, setCountries] = useState<Country[]>([])
+  const [loadingCountries, setLoadingCountries] = useState(false)
+  const [otherUniversity, setOtherUniversity] = useState('')
+  const [otherFaculty, setOtherFaculty] = useState('')
+  const [otherMajor, setOtherMajor] = useState('')
+  const [otherKulliyah, setOtherKulliyah] = useState('')
+  const [otherSyubah, setOtherSyubah] = useState('')
+  const [isOtherUniversity, setIsOtherUniversity] = useState(false)
+  const [isOtherFaculty, setIsOtherFaculty] = useState(false)
+  const [isOtherMajor, setIsOtherMajor] = useState(false)
+  const [isOtherKulliyah, setIsOtherKulliyah] = useState(false)
+  const [isOtherSyubah, setIsOtherSyubah] = useState(false)
 
   // Sync upload states with form values
   useEffect(() => {
@@ -33,6 +51,94 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
     setPhotoUploaded(!!(currentPhoto && currentPhoto !== ''))
     setSyahadahUploaded(!!(currentSyahadah && currentSyahadah !== ''))
   }, [currentStep, form])
+
+  // Initialize other states based on current form values
+  useEffect(() => {
+    const university = form.getValues('university')
+    const faculty = form.getValues('faculty')
+    const major = form.getValues('major')
+    const kulliyah = form.getValues('kulliyah')
+    const syubah = form.getValues('syubah')
+    // Enumerated option lists (without sentinel OTHER)
+    const universityOptions = ['AL_AZHAR', 'Al Azhar']
+    const facultyOptions = [
+      'USHULUDDIN',
+      'SYARIAH_QANUN',
+      'BAHASA_ARAB',
+      'DIRASAT_BANIN',
+      'DIRASAT_BANAT',
+    ]
+    const majorOptions = [
+      'TAFSIR_ULUMUL_QURAN',
+      'HADITS_ULUM',
+      'AQIDAH_FALSAFAH',
+      'DAKWAH_TSAQOFAH',
+      'SYARIAH_ISLAMIYAH',
+      'SYARIAH_QANUN',
+      'BAHASA_ARAB_AMMAH',
+      'TARIKH_HADHARAH',
+    ]
+    const kulliyahOptions = [
+      'ULUUM_ISLAMIYAH',
+      'DIRASAT_ULYA',
+      'DIRASAT_ISLAMIYAH_ARABIAH',
+      'TIDAK ADA',
+    ]
+    const syubahOptions = [
+      'TAFSIR_ULUMUL_QURAN',
+      'HADITS_ULUM',
+      'AQIDAH_FALSAFAH',
+      'FIQH_AM',
+      'FIQIH_MUQARRAN',
+      'USHUL_FIQH',
+      'LUGHAYWIYAT',
+      'BALAGHAH_NAQD',
+      'ADAB_NAQD',
+      'TIDAK ADA',
+    ]
+
+    const uniIsOther =
+      university === 'OTHER' || (university && !universityOptions.includes(university))
+    const facultyIsOther = faculty === 'OTHER' || (faculty && !facultyOptions.includes(faculty))
+    const majorIsOther = major === 'OTHER' || (major && !majorOptions.includes(major))
+    const kulliyahIsOther =
+      kulliyah === 'OTHER' || (kulliyah && !kulliyahOptions.includes(kulliyah))
+    const syubahIsOther = syubah === 'OTHER' || (syubah && !syubahOptions.includes(syubah))
+
+    setIsOtherUniversity(!!uniIsOther)
+    setIsOtherFaculty(!!facultyIsOther)
+    setIsOtherMajor(!!majorIsOther)
+    setIsOtherKulliyah(!!kulliyahIsOther)
+    setIsOtherSyubah(!!syubahIsOther)
+
+    if (uniIsOther && university && university !== 'OTHER') setOtherUniversity(university)
+    if (facultyIsOther && faculty && faculty !== 'OTHER') setOtherFaculty(faculty)
+    if (majorIsOther && major && major !== 'OTHER') setOtherMajor(major)
+    if (kulliyahIsOther && kulliyah && kulliyah !== 'OTHER') setOtherKulliyah(kulliyah)
+    if (syubahIsOther && syubah && syubah !== 'OTHER') setOtherSyubah(syubah)
+  }, [currentStep, form])
+
+  // Fetch countries
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true)
+      try {
+        const response = await fetch('/api/countries')
+        if (!response.ok) throw new Error('Failed to fetch countries')
+        const data = await response.json()
+        setCountries(data)
+      } catch (error) {
+        console.error('Error fetching countries:', error)
+        toast.error('Gagal memuat daftar negara')
+      } finally {
+        setLoadingCountries(false)
+      }
+    }
+
+    if (currentStep === 0) {
+      fetchCountries()
+    }
+  }, [currentStep])
 
   const uploadFile = async (file: File, fieldName: 'photo' | 'syahadah_photo') => {
     try {
@@ -101,7 +207,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Tipe Pendaftar *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih tipe pendaftar" />
@@ -161,7 +267,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Jenis Kelamin *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih jenis kelamin" />
@@ -202,13 +308,24 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     <FormLabel className="text-[#3E2522] font-semibold">
                       Kewarganegaraan *
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Contoh: Indonesia, Malaysia, dll"
-                        {...field}
-                        className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
+                          <SelectValue
+                            placeholder={
+                              loadingCountries ? 'Memuat negara...' : 'Pilih kewarganegaraan'
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.name}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -261,7 +378,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     <FormLabel className="text-[#3E2522] font-semibold">Nomor WhatsApp *</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: 08123456789"
+                        placeholder="Contoh: +628123456789"
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -276,7 +393,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Kekeluargaan *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih kekeluargaan" />
@@ -287,6 +404,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         <SelectItem value="KMB">Kesepakatan Mahasiswa Banten</SelectItem>
                         <SelectItem value="KMJ">Keluarga Mahasiswa Jambi</SelectItem>
                         <SelectItem value="KPJ">Keluarga Pelajar Jakarta</SelectItem>
+                        <SelectItem value="KPMJB">
+                          Keluarga Paguyuban Masyarakat Jawa Barat
+                        </SelectItem>
                         <SelectItem value="KMA">Keluarga Mahasiswa Aceh</SelectItem>
                         <SelectItem value="KSW">Kelompok Studi Walisongo</SelectItem>
                         <SelectItem value="KEMASS">Keluarga Masyarakat Sumatera Selatan</SelectItem>
@@ -323,7 +443,25 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Universitas</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === 'OTHER') {
+                          setIsOtherUniversity(true)
+                          setOtherUniversity(field.value || '')
+                        } else {
+                          setIsOtherUniversity(false)
+                          setOtherUniversity('')
+                        }
+                        field.onChange(value)
+                        if (value !== 'OTHER') {
+                          form.setValue(
+                            'university',
+                            (value === 'AL_AZHAR' ? 'Al Azhar' : value) as any,
+                          )
+                        }
+                      }}
+                      value={isOtherUniversity ? 'OTHER' : field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih universitas" />
@@ -334,6 +472,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         <SelectItem value="OTHER">Lainnya</SelectItem>
                       </SelectContent>
                     </Select>
+                    {isOtherUniversity && (
+                      <Input
+                        placeholder="Masukkan nama universitas lainnya"
+                        value={otherUniversity}
+                        onChange={(e) => {
+                          setOtherUniversity(e.target.value)
+                          form.setValue('university', e.target.value as any)
+                        }}
+                        className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
+                      />
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -408,7 +557,22 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Fakultas</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === 'OTHER') {
+                          setIsOtherFaculty(true)
+                          setOtherFaculty(field.value || '')
+                        } else {
+                          setIsOtherFaculty(false)
+                          setOtherFaculty('')
+                        }
+                        field.onChange(value)
+                        if (value !== 'OTHER') {
+                          form.setValue('faculty', value as any)
+                        }
+                      }}
+                      value={isOtherFaculty ? 'OTHER' : field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih fakultas" />
@@ -427,6 +591,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         <SelectItem value="OTHER">Lainnya</SelectItem>
                       </SelectContent>
                     </Select>
+                    {isOtherFaculty && (
+                      <Input
+                        placeholder="Masukkan nama fakultas lainnya"
+                        value={otherFaculty}
+                        onChange={(e) => {
+                          setOtherFaculty(e.target.value)
+                          form.setValue('faculty', e.target.value as any)
+                        }}
+                        className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
+                      />
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -437,7 +612,22 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">Jurusan</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === 'OTHER') {
+                          setIsOtherMajor(true)
+                          setOtherMajor(field.value || '')
+                        } else {
+                          setIsOtherMajor(false)
+                          setOtherMajor('')
+                        }
+                        field.onChange(value)
+                        if (value !== 'OTHER') {
+                          form.setValue('major', value as any)
+                        }
+                      }}
+                      value={isOtherMajor ? 'OTHER' : field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue placeholder="Pilih jurusan" />
@@ -455,6 +645,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         <SelectItem value="OTHER">Lainnya</SelectItem>
                       </SelectContent>
                     </Select>
+                    {isOtherMajor && (
+                      <Input
+                        placeholder="Masukkan nama jurusan lainnya"
+                        value={otherMajor}
+                        onChange={(e) => {
+                          setOtherMajor(e.target.value)
+                          form.setValue('major', e.target.value as any)
+                        }}
+                        className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
+                      />
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -521,7 +722,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
                         <FormLabel className="text-[#3E2522] font-semibold">Predikat</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                               <SelectValue placeholder="Pilih predikat" />
@@ -533,6 +734,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                             <SelectItem value="JAYYID_JIDDAN_MMS">
                               Jayyid Jiddan Ma'a Martabati Syarof
                             </SelectItem>
+                            <SelectItem value="JAYYID_JIDDAN">Jayyid Jiddan</SelectItem>
+                            <SelectItem value="JAYYID">Jayyid</SelectItem>
+                            <SelectItem value="MAQBUL">Maqbul</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -553,8 +757,20 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                             min="0"
                             max="100"
                             step="0.01"
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                            value={
+                              field.value === null || field.value === undefined
+                                ? ''
+                                : String(field.value)
+                            }
+                            onChange={(e) => {
+                              const v = e.target.value
+                              if (v === '') {
+                                field.onChange(null)
+                              } else {
+                                const parsed = parseFloat(v)
+                                field.onChange(isNaN(parsed) ? null : parsed)
+                              }
+                            }}
                             className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                           />
                         </FormControl>
@@ -563,7 +779,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     )}
                   />
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-[#3E2522]">Foto Syahadah</label>
+                    <label className="text-sm font-medium text-[#3E2522]">
+                      Foto Bukti Kelulusan (Syahadah/Kasyfu/Nilai Tingkat 4)
+                    </label>
                     <Input
                       type="file"
                       accept="image/*"
@@ -697,7 +915,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         <FormLabel className="text-[#3E2522] font-semibold">
                           Paket Atribut
                         </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                               <SelectValue placeholder="Pilih paket" />
@@ -719,30 +937,32 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   />
                 </div>
               )}
-              <FormField
-                control={form.control}
-                name="continuing_study"
-                render={({ field }) => (
-                  <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">
-                      Melanjutkan ke S2?
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="YES">Ya</SelectItem>
-                        <SelectItem value="NO">Tidak</SelectItem>
-                        <SelectItem value="UNDECIDED">Belum Memutuskan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {educationLevel === 'S1' && (
+                <FormField
+                  control={form.control}
+                  name="continuing_study"
+                  render={({ field }) => (
+                    <FormItem className="transition-all duration-300 hover:scale-105">
+                      <FormLabel className="text-[#3E2522] font-semibold">
+                        Melanjutkan ke S2?
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
+                            <SelectValue placeholder="Pilih" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="YES">Ya</SelectItem>
+                          <SelectItem value="NO">Tidak</SelectItem>
+                          <SelectItem value="UNDECIDED">Belum Memutuskan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               {educationLevel === 'S1' && continuingStudy === 'YES' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -751,7 +971,20 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
                         <FormLabel className="text-[#3E2522] font-semibold">Kulliyah</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={(value) => {
+                            if (value === 'OTHER') {
+                              setIsOtherKulliyah(true)
+                              setOtherKulliyah(field.value || '')
+                            } else {
+                              setIsOtherKulliyah(false)
+                              setOtherKulliyah('')
+                              form.setValue('kulliyah', value as any)
+                            }
+                            field.onChange(value)
+                          }}
+                          value={isOtherKulliyah ? 'OTHER' : field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                               <SelectValue placeholder="Pilih kulliyah" />
@@ -769,6 +1002,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                             <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
                           </SelectContent>
                         </Select>
+                        {isOtherKulliyah && (
+                          <Input
+                            placeholder="Masukkan nama kulliyah lainnya"
+                            value={otherKulliyah}
+                            onChange={(e) => {
+                              setOtherKulliyah(e.target.value)
+                              form.setValue('kulliyah', e.target.value as any)
+                            }}
+                            className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
+                          />
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -779,7 +1023,20 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
                         <FormLabel className="text-[#3E2522] font-semibold">Syu'bah</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={(value) => {
+                            if (value === 'OTHER') {
+                              setIsOtherSyubah(true)
+                              setOtherSyubah(field.value || '')
+                            } else {
+                              setIsOtherSyubah(false)
+                              setOtherSyubah('')
+                              form.setValue('syubah', value as any)
+                            }
+                            field.onChange(value)
+                          }}
+                          value={isOtherSyubah ? 'OTHER' : field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                               <SelectValue placeholder="Pilih syu'bah" />
@@ -801,6 +1058,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                             <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
                           </SelectContent>
                         </Select>
+                        {isOtherSyubah && (
+                          <Input
+                            placeholder="Masukkan nama syu'bah lainnya"
+                            value={otherSyubah}
+                            onChange={(e) => {
+                              setOtherSyubah(e.target.value)
+                              form.setValue('syubah', e.target.value as any)
+                            }}
+                            className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
+                          />
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

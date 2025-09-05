@@ -197,11 +197,11 @@ export interface Registrant {
         | 'FOSGAMA'
       )
     | null;
-  university: 'AL_AZHAR' | 'OTHER';
+  university: string;
   education_level: 'S1' | 'S2' | 'S3';
   first_enrollment_year: number;
   graduation_year: number;
-  faculty: 'USHULUDDIN' | 'SYARIAH_QANUN' | 'BAHASA_ARAB' | 'DIRASAT_BANIN' | 'DIRASAT_BANAT' | 'OTHER';
+  faculty: string;
   major:
     | 'TAFSIR_ULUMUL_QURAN'
     | 'HADITS_ULUM'

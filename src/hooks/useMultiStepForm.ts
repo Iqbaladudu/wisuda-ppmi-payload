@@ -9,7 +9,7 @@ const useMultiStepForm = () => {
   const [isValidating, setIsValidating] = useState(false)
 
   const form = useForm<FormData>({
-    // resolver: zodResolver(formSchema), // Using manual validation instead
+    resolver: zodResolver(formSchema),
     defaultValues: {
       registrant_type: 'SHOFI' as const,
       name: '',
