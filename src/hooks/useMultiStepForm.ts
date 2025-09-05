@@ -3,13 +3,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { formSchema, FormData, steps } from '../constants/constants'
+import { useTranslations } from 'next-intl'
 
 const useMultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const [isValidating, setIsValidating] = useState(false)
 
+  const t = useTranslations('FormPage')
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    // resolver: zodResolver(formSchema), // Using manual validation instead
     defaultValues: {
       registrant_type: 'SHOFI' as const,
       name: '',
@@ -21,7 +23,7 @@ const useMultiStepForm = () => {
       phone_number: '',
       whatsapp: '',
       kekeluargaan: 'KMM' as const,
-      university: 'AL_AZHAR' as const,
+      university: 'Al Azhar',
       education_level: 'S1' as const,
       first_enrollment_year: 2019,
       graduation_year: 2025,
@@ -65,13 +67,13 @@ const useMultiStepForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Submit gagal')
+        throw new Error(errorData.message || t('Errors.SubmitFailed'))
       }
 
       return response.json()
     },
     onSuccess: (result) => {
-      alert('Pendaftaran berhasil! ID: ' + result.id)
+      alert(t('Messages.RegistrationSuccess', { id: result.id }))
       form.reset() // Reset form setelah sukses
       setCurrentStep(0) // Kembali ke step pertama
     },
@@ -84,17 +86,17 @@ const useMultiStepForm = () => {
         if (errorData.errors) {
           Object.keys(errorData.errors).forEach((field: string) => {
             form.setError(field as keyof FormData, {
-              message: errorData.errors[field].message || 'Error dari server',
+              message: errorData.errors[field].message || t('Errors.ServerError'),
             })
           })
         } else {
-          form.setError('root', { message: errorData.message || 'Submit gagal' })
+          form.setError('root', { message: errorData.message || t('Errors.SubmitFailed') })
         }
       } else if (error.message) {
         // Network or other error
-        form.setError('root', { message: 'Error jaringan: ' + error.message })
+        form.setError('root', { message: t('Errors.NetworkError') + ' ' + error.message })
       } else {
-        form.setError('root', { message: 'Terjadi kesalahan tidak dikenal' })
+        form.setError('root', { message: t('Errors.UnknownError') })
       }
     },
     onSettled: () => {
@@ -146,29 +148,21 @@ const useMultiStepForm = () => {
 
     const currentValues = form.getValues()
 
-    // Clear any existing errors for upload fields first
-    if (fieldsToValidate.includes('photo')) {
-      form.clearErrors('photo')
-    }
-    if (fieldsToValidate.includes('syahadah_photo')) {
-      form.clearErrors('syahadah_photo')
-    }
-    if (fieldsToValidate.includes('terms_agreement')) {
-      form.clearErrors('terms_agreement')
-    }
+    // Clear errors for current step fields first
+    fieldsToValidate.forEach((field) => {
+      form.clearErrors(field)
+    })
 
     // Manual validation for photo field in step 3
     if (currentStep === 3 && (!currentValues.photo || currentValues.photo === '')) {
-      form.setError('photo', { message: 'Foto diri wajib diupload' })
+      form.setError('photo', { message: t('Errors.PhotoRequired') })
       setIsValidating(false)
       return
     }
 
     // Manual validation for terms_agreement in step 3
     if (currentStep === 3 && !currentValues.terms_agreement) {
-      form.setError('terms_agreement', {
-        message: 'Persetujuan syarat & ketentuan wajib dicentang',
-      })
+      form.setError('terms_agreement', { message: t('Errors.TermsRequired') })
       setIsValidating(false)
       return
     }
@@ -179,12 +173,9 @@ const useMultiStepForm = () => {
       currentValues.registrant_type === 'SHOFI' &&
       (!currentValues.syahadah_photo || currentValues.syahadah_photo === '')
     ) {
-      form.setError('syahadah_photo', { message: 'Foto syahadah wajib diupload' })
+      form.setError('syahadah_photo', { message: t('Errors.SyahadahPhotoRequired') })
       setIsValidating(false)
       return
-    }
-    if (fieldsToValidate.includes('terms_agreement')) {
-      form.clearErrors('terms_agreement')
     }
 
     // Create a modified schema that excludes upload fields from validation
@@ -205,8 +196,10 @@ const useMultiStepForm = () => {
     const result = partialSchema.safeParse(currentValues)
 
     if (result.success) {
-      // Clear all errors before proceeding to next step
-      form.clearErrors()
+      // Clear errors for current step fields before proceeding
+      fieldsToValidate.forEach((field) => {
+        form.clearErrors(field)
+      })
       setCurrentStep((prev) => prev + 1)
     } else {
       // Set errors only for fields in current step
@@ -252,13 +245,13 @@ const useMultiStepForm = () => {
 
       // Check upload fields manually
       if (!data.photo || data.photo === '') {
-        form.setError('photo', { message: 'Foto diri wajib diupload' })
+        form.setError('photo', { message: t('Errors.PhotoRequired') })
       }
       if (
         data.registrant_type === 'SHOFI' &&
         (!data.syahadah_photo || data.syahadah_photo === '')
       ) {
-        form.setError('syahadah_photo', { message: 'Foto syahadah wajib diupload' })
+        form.setError('syahadah_photo', { message: t('Errors.SyahadahPhotoRequired') })
       }
 
       // If there are any errors, don't submit

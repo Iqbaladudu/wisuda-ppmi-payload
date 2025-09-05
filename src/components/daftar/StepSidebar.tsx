@@ -1,16 +1,18 @@
 import React from 'react'
-import { steps } from '@/constants/constants'
+import { useTranslations } from 'next-intl'
 
 interface StepSidebarProps {
   currentStep: number
+  steps: { id: string; title: string; description: string }[]
 }
 
 // Purely presentational sidebar showing steps with a subtle gradient + animation.
-const StepSidebar: React.FC<StepSidebarProps> = ({ currentStep }) => {
+const StepSidebar: React.FC<StepSidebarProps> = ({ currentStep, steps }) => {
+  const t = useTranslations('FormPage')
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 rounded-xl bg-gradient-to-b from-[#3E2522] via-[#56332F] to-[#3E2522] p-6 text-[#FCEFEA] shadow-xl relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(circle_at_30%_20%,white,transparent_70%)]" />
-      <h2 className="text-xl font-bold mb-6 tracking-wide">Pendaftaran</h2>
+      <h2 className="text-xl font-bold mb-6 tracking-wide">{t('Page.Heading')}</h2>
       <ul className="space-y-4">
         {steps.map((s, idx) => {
           const active = idx === currentStep

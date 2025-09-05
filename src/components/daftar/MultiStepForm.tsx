@@ -1,23 +1,74 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import useMultiStepForm from '../../hooks/useMultiStepForm'
-import { steps } from '../../constants/constants'
 import StepContent from './StepContent'
 import StepSidebar from './StepSidebar'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 const MultiStepForm: React.FC = () => {
   const { form, currentStep, isValidating, isSubmitting, nextStep, prevStep, onSubmit } =
     useMultiStepForm()
+  const t = useTranslations('FormPage')
+
+  // Build steps from translations so titles/descriptions are localized
+  const stepsData = useMemo(
+    () =>
+      ['1', '2', '3', '4', '5'].map((id) => ({
+        id,
+        title: t(`Steps.${id}.Title` as any),
+        description: t(`Steps.${id}.Description` as any),
+      })),
+    [t],
+  )
+
+  // Get current step fields
+  const getCurrentStepFields = (step: number): string[] => {
+    const stepFields: string[][] = [
+      [
+        'registrant_type',
+        'name',
+        'name_arabic',
+        'gender',
+        'email',
+        'nationality',
+        'passport_number',
+        'phone_number',
+        'whatsapp',
+        'kekeluargaan',
+      ],
+      [
+        'university',
+        'education_level',
+        'first_enrollment_year',
+        'graduation_year',
+        'faculty',
+        'major',
+        'quran_memorization',
+      ],
+      ['continuing_study', 'kulliyah', 'syubah', 'syahadah_photo'], // Include syahadah_photo for SHOFI validation
+      ['photo', 'terms_agreement'],
+      [], // Step 4: No fields
+    ]
+    return stepFields[step] || []
+  }
+
+  // Check if current step has errors
+  const hasCurrentStepErrors = () => {
+    const currentFields = getCurrentStepFields(currentStep)
+    return currentFields.some(
+      (field) => form.formState.errors[field as keyof typeof form.formState.errors],
+    )
+  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full">
-      <StepSidebar currentStep={currentStep} />
+      <StepSidebar currentStep={currentStep} steps={stepsData} />
       <div className="flex-1">
         <Card className="border-white/10 bg-white/90 backdrop-blur-xl relative overflow-hidden shadow-2xl">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,#F5D3CA_0%,transparent_60%)] opacity-70" />
@@ -26,13 +77,13 @@ const MultiStepForm: React.FC = () => {
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-[#3E2522] to-[#5A3A2F] text-[#FCEFEA] text-sm font-semibold shadow">
                 {currentStep + 1}
               </span>
-              {steps[currentStep].title}
+              {stepsData[currentStep].title}
             </CardTitle>
             <p className="text-xs md:text-sm text-[#3E2522]/70 max-w-prose leading-relaxed">
-              {steps[currentStep].description}
+              {stepsData[currentStep].description}
             </p>
             <Progress
-              value={((currentStep + 1) / steps.length) * 100}
+              value={((currentStep + 1) / stepsData.length) * 100}
               className="w-full h-2 overflow-hidden bg-gradient-to-r from-[#3E2522]/15 to-[#5A3A2F]/15"
             />
           </CardHeader>
@@ -52,41 +103,41 @@ const MultiStepForm: React.FC = () => {
                       onClick={() => {
                         if (currentStep === 0) return
                         prevStep()
-                        toast.info('Kembali ke langkah sebelumnya')
+                        toast.info(t('Messages.PreviousStep'))
                       }}
                       disabled={currentStep === 0 || isValidating || isSubmitting}
                       className="min-w-[130px]"
                     >
-                      Sebelumnya
+                      {t('Buttons.Previous')}
                     </Button>
                   </div>
-                  {currentStep < steps.length - 1 ? (
+                  {currentStep < stepsData.length - 1 ? (
                     <div className="flex flex-col items-end gap-2">
                       <Button
                         type="button"
                         onClick={() => {
-                          if (Object.keys(form.formState.errors).length > 0) {
-                            toast.error('Periksa kembali field yang belum valid')
+                          if (hasCurrentStepErrors()) {
+                            toast.error(t('Messages.CheckFields'))
                             return
                           }
                           nextStep()
-                          toast.success('Berhasil ke langkah berikutnya')
+                          toast.success(t('Messages.NextStep'))
                         }}
-                        disabled={
-                          isValidating ||
-                          isSubmitting ||
-                          Object.keys(form.formState.errors).length > 0
-                        }
+                        disabled={isValidating || isSubmitting || hasCurrentStepErrors()}
                         className="min-w-[150px] bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
                       >
-                        {isValidating ? 'Memvalidasi...' : 'Selanjutnya'}
+                        {isValidating ? t('Buttons.Validating') : t('Buttons.Next')}
                       </Button>
                       <p className="text-[11px] text-[#3E2522]/70">
-                        Langkah {currentStep + 1} dari {steps.length}
+                        {t('Messages.StepOf', {
+                          current: currentStep + 1,
+                          total: stepsData.length,
+                        })}
                       </p>
-                      {Object.keys(form.formState.errors).length > 0 && (
+                      {hasCurrentStepErrors() && (
                         <div className="text-[11px] text-red-600">
                           {Object.entries(form.formState.errors)
+                            .filter(([field]) => getCurrentStepFields(currentStep).includes(field))
                             .slice(0, 4)
                             .map(([field, error]) => (
                               <div key={field}>
@@ -101,31 +152,31 @@ const MultiStepForm: React.FC = () => {
                       <Button
                         type="button"
                         onClick={async () => {
-                          if (Object.keys(form.formState.errors).length > 0) {
-                            toast.error('Periksa kembali field yang belum valid')
+                          if (hasCurrentStepErrors()) {
+                            toast.error(t('Messages.CheckFields'))
                             return
                           }
                           const data = form.getValues()
-                          toast.message('Mengirim data...', {
-                            description: 'Mohon tunggu proses submit',
+                          toast.message(t('Messages.SendingData'), {
+                            description: t('Messages.WaitSubmit'),
                           })
                           await onSubmit(data)
                         }}
-                        disabled={
-                          isValidating ||
-                          isSubmitting ||
-                          Object.keys(form.formState.errors).length > 0
-                        }
+                        disabled={isValidating || isSubmitting || hasCurrentStepErrors()}
                         className="min-w-[160px] bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
                       >
-                        {isSubmitting ? 'Mengirim...' : 'Kirim'}
+                        {isSubmitting ? t('Buttons.Submitting') : t('Buttons.Submit')}
                       </Button>
                       <p className="text-[11px] text-[#3E2522]/70">
-                        Langkah {currentStep + 1} dari {steps.length}
+                        {t('Messages.StepOf', {
+                          current: currentStep + 1,
+                          total: stepsData.length,
+                        })}
                       </p>
-                      {Object.keys(form.formState.errors).length > 0 && (
+                      {hasCurrentStepErrors() && (
                         <div className="text-[11px] text-red-600">
                           {Object.entries(form.formState.errors)
+                            .filter(([field]) => getCurrentStepFields(currentStep).includes(field))
                             .slice(0, 4)
                             .map(([field, error]) => (
                               <div key={field}>

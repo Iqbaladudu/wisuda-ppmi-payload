@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -26,18 +27,19 @@ interface Country {
 }
 
 const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
+  const t = useTranslations('FormPage')
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [uploadingSyahadah, setUploadingSyahadah] = useState(false)
   const [photoUploaded, setPhotoUploaded] = useState(false)
   const [syahadahUploaded, setSyahadahUploaded] = useState(false)
   const [countries, setCountries] = useState<Country[]>([])
   const [loadingCountries, setLoadingCountries] = useState(false)
-  const [otherUniversity, setOtherUniversity] = useState('')
+  const [universities, setUniversities] = useState<string[]>([])
+  const [loadingUniversities, setLoadingUniversities] = useState(false)
   const [otherFaculty, setOtherFaculty] = useState('')
   const [otherMajor, setOtherMajor] = useState('')
   const [otherKulliyah, setOtherKulliyah] = useState('')
   const [otherSyubah, setOtherSyubah] = useState('')
-  const [isOtherUniversity, setIsOtherUniversity] = useState(false)
   const [isOtherFaculty, setIsOtherFaculty] = useState(false)
   const [isOtherMajor, setIsOtherMajor] = useState(false)
   const [isOtherKulliyah, setIsOtherKulliyah] = useState(false)
@@ -54,13 +56,12 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
 
   // Initialize other states based on current form values
   useEffect(() => {
-    const university = form.getValues('university')
     const faculty = form.getValues('faculty')
     const major = form.getValues('major')
     const kulliyah = form.getValues('kulliyah')
     const syubah = form.getValues('syubah')
     // Enumerated option lists (without sentinel OTHER)
-    const universityOptions = ['AL_AZHAR', 'Al Azhar']
+    const universityOptions = ['Al Azhar']
     const facultyOptions = [
       'USHULUDDIN',
       'SYARIAH_QANUN',
@@ -97,21 +98,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       'TIDAK ADA',
     ]
 
-    const uniIsOther =
-      university === 'OTHER' || (university && !universityOptions.includes(university))
     const facultyIsOther = faculty === 'OTHER' || (faculty && !facultyOptions.includes(faculty))
     const majorIsOther = major === 'OTHER' || (major && !majorOptions.includes(major))
     const kulliyahIsOther =
       kulliyah === 'OTHER' || (kulliyah && !kulliyahOptions.includes(kulliyah))
     const syubahIsOther = syubah === 'OTHER' || (syubah && !syubahOptions.includes(syubah))
 
-    setIsOtherUniversity(!!uniIsOther)
     setIsOtherFaculty(!!facultyIsOther)
     setIsOtherMajor(!!majorIsOther)
     setIsOtherKulliyah(!!kulliyahIsOther)
     setIsOtherSyubah(!!syubahIsOther)
 
-    if (uniIsOther && university && university !== 'OTHER') setOtherUniversity(university)
     if (facultyIsOther && faculty && faculty !== 'OTHER') setOtherFaculty(faculty)
     if (majorIsOther && major && major !== 'OTHER') setOtherMajor(major)
     if (kulliyahIsOther && kulliyah && kulliyah !== 'OTHER') setOtherKulliyah(kulliyah)
@@ -129,14 +126,31 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
         setCountries(data)
       } catch (error) {
         console.error('Error fetching countries:', error)
-        toast.error('Gagal memuat daftar negara')
+        toast.error(t('Messages.CountriesLoadError'))
       } finally {
         setLoadingCountries(false)
       }
     }
 
+    const fetchUniversities = async () => {
+      setLoadingUniversities(true)
+      try {
+        const response = await fetch('http://universities.hipolabs.com/search?&country=egypt')
+        if (!response.ok) throw new Error('Failed to fetch universities')
+        const data = await response.json()
+        const names = data.map((uni: any) => uni.name)
+        setUniversities(names)
+      } catch (error) {
+        console.error('Error fetching universities:', error)
+        toast.error('Failed to load universities')
+      } finally {
+        setLoadingUniversities(false)
+      }
+    }
+
     if (currentStep === 0) {
       fetchCountries()
+      fetchUniversities()
     }
   }, [currentStep])
 
@@ -180,10 +194,12 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       form.setValue(fieldName, mediaId, { shouldValidate: false }) // Set the ID to the form field without validation
       if (fieldName === 'photo') setPhotoUploaded(true)
       else setSyahadahUploaded(true)
-      toast.success('File berhasil diupload!')
+      toast.success(t('Messages.UploadSuccess'))
     } catch (error) {
       console.error('Upload error:', error)
-      toast.error('Upload gagal: ' + (error instanceof Error ? error.message : 'Unknown error'))
+      toast.error(
+        t('Messages.UploadError') + (error instanceof Error ? error.message : 'Unknown error'),
+      )
     } finally {
       if (fieldName === 'photo') setUploadingPhoto(false)
       else setUploadingSyahadah(false)
@@ -196,8 +212,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
           <div className="bg-gradient-to-tr from-white to-white/70 backdrop-blur-sm p-6 md:p-8 rounded-xl ring-1 ring-[#3E2522]/10 shadow-sm">
             <div className="bg-gradient-to-r from-[#3E2522]/10 to-[#5A3A2F]/10 p-4 rounded-lg mb-6 border border-[#3E2522]/10">
               <p className="text-xs md:text-sm text-[#3E2522] font-medium tracking-wide">
-                <strong>Informasi:</strong> Field bertanda * wajib diisi. Periksa kembali sebelum
-                melanjutkan.
+                <strong>{t('Page.Badge')}:</strong> {t('Form.Info')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
@@ -206,17 +221,25 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="registrant_type"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Tipe Pendaftar *</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.RegistrantType')}
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih tipe pendaftar" />
+                          <SelectValue placeholder={t('Form.Labels.RegistrantType')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="SHOFI">Shofi</SelectItem>
-                        <SelectItem value="TASHFIYAH">Tashfiyah</SelectItem>
-                        <SelectItem value="ATRIBUT">Pembeli Atribut</SelectItem>
+                        <SelectItem value="SHOFI">
+                          {t('Form.Options.RegistrantType.SHOFI')}
+                        </SelectItem>
+                        <SelectItem value="TASHFIYAH">
+                          {t('Form.Options.RegistrantType.TASHFIYAH')}
+                        </SelectItem>
+                        <SelectItem value="ATRIBUT">
+                          {t('Form.Options.RegistrantType.ATRIBUT')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -229,11 +252,11 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Nama Lengkap (Latin) *
+                      {t('Form.Labels.Name')}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: Ahmad Abdullah Rahman"
+                        placeholder={t('Form.Placeholders.Name')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -248,11 +271,11 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Nama Lengkap (Arab) *
+                      {t('Form.Labels.NameArabic')}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: أحمد عبدالله الرحمن"
+                        placeholder={t('Form.Placeholders.NameArabic')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -266,16 +289,18 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="gender"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Jenis Kelamin *</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.Gender')}
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih jenis kelamin" />
+                          <SelectValue placeholder={t('Form.Labels.Gender')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="L">Laki-laki</SelectItem>
-                        <SelectItem value="P">Perempuan</SelectItem>
+                        <SelectItem value="L">{t('Form.Options.Gender.L')}</SelectItem>
+                        <SelectItem value="P">{t('Form.Options.Gender.P')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -287,11 +312,13 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Email *</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.Email')}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Contoh: ahmad@example.com"
+                        placeholder={t('Form.Placeholders.Email')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -306,15 +333,13 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Kewarganegaraan *
+                      {t('Form.Labels.Nationality')}
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
                           <SelectValue
-                            placeholder={
-                              loadingCountries ? 'Memuat negara...' : 'Pilih kewarganegaraan'
-                            }
+                            placeholder={loadingCountries ? '...' : t('Form.Labels.Nationality')}
                           />
                         </SelectTrigger>
                       </FormControl>
@@ -336,15 +361,14 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Nomor Paspor{' '}
                       {form.watch('nationality')?.toLowerCase() !== 'indonesia' &&
                       form.watch('nationality')?.toLowerCase() !== 'wni'
-                        ? '*'
-                        : '(jika bukan WNI)'}
+                        ? t('Form.Labels.PassportNumberRequired')
+                        : t('Form.Labels.PassportNumber')}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: A12345678"
+                        placeholder={t('Form.Placeholders.PassportNumber')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -358,10 +382,12 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="phone_number"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Nomor Telepon</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.PhoneNumber')}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: 08123456789"
+                        placeholder={t('Form.Placeholders.PhoneNumber')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -375,10 +401,12 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="whatsapp"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Nomor WhatsApp *</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.WhatsApp')}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Contoh: +628123456789"
+                        placeholder={t('Form.Placeholders.WhatsApp')}
                         {...field}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
@@ -392,36 +420,46 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="kekeluargaan"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Kekeluargaan *</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.Kekeluargaan')}
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih kekeluargaan" />
+                          <SelectValue placeholder={t('Form.Labels.Kekeluargaan')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="KMM">Kesepakatan Mahasiswa Minangkabau</SelectItem>
-                        <SelectItem value="KMB">Kesepakatan Mahasiswa Banten</SelectItem>
-                        <SelectItem value="KMJ">Keluarga Mahasiswa Jambi</SelectItem>
-                        <SelectItem value="KPJ">Keluarga Pelajar Jakarta</SelectItem>
+                        <SelectItem value="KMM">{t('Form.Options.Kekeluargaan.KMM')}</SelectItem>
+                        <SelectItem value="KMB">{t('Form.Options.Kekeluargaan.KMB')}</SelectItem>
+                        <SelectItem value="KMJ">{t('Form.Options.Kekeluargaan.KMJ')}</SelectItem>
+                        <SelectItem value="KPJ">{t('Form.Options.Kekeluargaan.KPJ')}</SelectItem>
                         <SelectItem value="KPMJB">
-                          Keluarga Paguyuban Masyarakat Jawa Barat
+                          {t('Form.Options.Kekeluargaan.KMNTB')}
                         </SelectItem>
-                        <SelectItem value="KMA">Keluarga Mahasiswa Aceh</SelectItem>
-                        <SelectItem value="KSW">Kelompok Studi Walisongo</SelectItem>
-                        <SelectItem value="KEMASS">Keluarga Masyarakat Sumatera Selatan</SelectItem>
-                        <SelectItem value="KKS">Kerukunan Keluarga Sulawesi</SelectItem>
-                        <SelectItem value="KSMR">Kelompok Studi Mahasiswa Riau</SelectItem>
+                        <SelectItem value="KMA">{t('Form.Options.Kekeluargaan.KMA')}</SelectItem>
+                        <SelectItem value="KSW">{t('Form.Options.Kekeluargaan.KSW')}</SelectItem>
+                        <SelectItem value="KEMASS">
+                          {t('Form.Options.Kekeluargaan.KEMASS')}
+                        </SelectItem>
+                        <SelectItem value="KKS">{t('Form.Options.Kekeluargaan.KKS')}</SelectItem>
+                        <SelectItem value="KSMR">{t('Form.Options.Kekeluargaan.KSMR')}</SelectItem>
                         <SelectItem value="KMNTB">
-                          Keluarga Mahasiswa Nusa Tenggara & Bali
+                          {t('Form.Options.Kekeluargaan.KMNTB')}
                         </SelectItem>
-                        <SelectItem value="KMKM">Keluarga Mahasiswa Kalimantan</SelectItem>
-                        <SelectItem value="IKMAL">Ikatan Keluarga Mahasiswa Lampung</SelectItem>
-                        <SelectItem value="GAMAJATIM">Keluarga Masyarakat Jawa Timur</SelectItem>
+                        <SelectItem value="KMKM">{t('Form.Options.Kekeluargaan.KMKM')}</SelectItem>
+                        <SelectItem value="IKMAL">
+                          {t('Form.Options.Kekeluargaan.IKMAL')}
+                        </SelectItem>
+                        <SelectItem value="GAMAJATIM">
+                          {t('Form.Options.Kekeluargaan.GAMAJATIM')}
+                        </SelectItem>
                         <SelectItem value="HMMSU">
-                          Himpunan Masyarakat dan Mahasiswa Sumatera Utara
+                          {t('Form.Options.Kekeluargaan.HMMSU')}
                         </SelectItem>
-                        <SelectItem value="FOSGAMA">Forum Studi Keluarga Madura</SelectItem>
+                        <SelectItem value="FOSGAMA">
+                          {t('Form.Options.Kekeluargaan.FOSGAMA')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -442,47 +480,27 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="university"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Universitas</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        if (value === 'OTHER') {
-                          setIsOtherUniversity(true)
-                          setOtherUniversity(field.value || '')
-                        } else {
-                          setIsOtherUniversity(false)
-                          setOtherUniversity('')
-                        }
-                        field.onChange(value)
-                        if (value !== 'OTHER') {
-                          form.setValue(
-                            'university',
-                            (value === 'AL_AZHAR' ? 'Al Azhar' : value) as any,
-                          )
-                        }
-                      }}
-                      value={isOtherUniversity ? 'OTHER' : field.value}
-                    >
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.University')}
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih universitas" />
+                          <SelectValue
+                            placeholder={
+                              loadingUniversities ? '...' : t('Form.Placeholders.University')
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="AL_AZHAR">Al Azhar</SelectItem>
-                        <SelectItem value="OTHER">Lainnya</SelectItem>
+                        {universities.map((uni) => (
+                          <SelectItem key={uni} value={uni}>
+                            {uni}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                    {isOtherUniversity && (
-                      <Input
-                        placeholder="Masukkan nama universitas lainnya"
-                        value={otherUniversity}
-                        onChange={(e) => {
-                          setOtherUniversity(e.target.value)
-                          form.setValue('university', e.target.value as any)
-                        }}
-                        className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors mt-2"
-                      />
-                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -493,18 +511,18 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Jenjang Pendidikan
+                      {t('Form.Labels.EducationLevel')}
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih jenjang" />
+                          <SelectValue placeholder={t('Form.Labels.EducationLevel')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="S1">Strata 1/Sarjana</SelectItem>
-                        <SelectItem value="S2">Strata 2/Magister</SelectItem>
-                        <SelectItem value="S3">Strata 3/Doktor</SelectItem>
+                        <SelectItem value="S1">{t('Form.Options.EducationLevel.S1')}</SelectItem>
+                        <SelectItem value="S2">{t('Form.Options.EducationLevel.S2')}</SelectItem>
+                        <SelectItem value="S3">{t('Form.Options.EducationLevel.S3')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -517,13 +535,16 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Tahun Pertama Terdaftar
+                      {t('Form.Labels.FirstEnrollmentYear')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value)
+                          field.onChange(isNaN(val) ? 2019 : val)
+                        }}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
                     </FormControl>
@@ -537,13 +558,16 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Tahun Menyelesaikan Pendidikan
+                      {t('Form.Labels.GraduationYear')}
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value)
+                          field.onChange(isNaN(val) ? 2025 : val)
+                        }}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
                     </FormControl>
@@ -556,7 +580,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="faculty"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Fakultas</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.Faculty')}
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => {
                         if (value === 'OTHER') {
@@ -575,25 +601,31 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     >
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih fakultas" />
+                          <SelectValue placeholder={t('Form.Labels.Faculty')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="USHULUDDIN">Ushuluddin</SelectItem>
-                        <SelectItem value="SYARIAH_QANUN">Syariah wal Qonun</SelectItem>
-                        <SelectItem value="BAHASA_ARAB">Lughoh Arabiyah</SelectItem>
+                        <SelectItem value="USHULUDDIN">
+                          {t('Form.Options.Faculty.USHULUDDIN')}
+                        </SelectItem>
+                        <SelectItem value="SYARIAH_QANUN">
+                          {t('Form.Options.Faculty.SYARIAH_QANUN')}
+                        </SelectItem>
+                        <SelectItem value="BAHASA_ARAB">
+                          {t('Form.Options.Faculty.BAHASA_ARAB')}
+                        </SelectItem>
                         <SelectItem value="DIRASAT_BANIN">
-                          Dirasat Islamiyah wal Arabiyah Lil Banin
+                          {t('Form.Options.Faculty.DIRASAT_BANIN')}
                         </SelectItem>
                         <SelectItem value="DIRASAT_BANAT">
-                          Dirasat Islamiyah wal Arabiyah Lil Banat
+                          {t('Form.Options.Faculty.DIRASAT_BANAT')}
                         </SelectItem>
-                        <SelectItem value="OTHER">Lainnya</SelectItem>
+                        <SelectItem value="OTHER">{t('Form.Options.Faculty.OTHER')}</SelectItem>
                       </SelectContent>
                     </Select>
                     {isOtherFaculty && (
                       <Input
-                        placeholder="Masukkan nama fakultas lainnya"
+                        placeholder={t('Form.Options.Faculty.OTHER')}
                         value={otherFaculty}
                         onChange={(e) => {
                           setOtherFaculty(e.target.value)
@@ -611,7 +643,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 name="major"
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
-                    <FormLabel className="text-[#3E2522] font-semibold">Jurusan</FormLabel>
+                    <FormLabel className="text-[#3E2522] font-semibold">
+                      {t('Form.Labels.Major')}
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => {
                         if (value === 'OTHER') {
@@ -630,24 +664,40 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     >
                       <FormControl>
                         <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                          <SelectValue placeholder="Pilih jurusan" />
+                          <SelectValue placeholder={t('Form.Labels.Major')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="TAFSIR_ULUMUL_QURAN">Tafsir wa Ulumul Quran</SelectItem>
-                        <SelectItem value="HADITS_ULUM">Hadits wa Ulumul Hadits</SelectItem>
-                        <SelectItem value="AQIDAH_FALSAFAH">Aqidah wal Falsafah</SelectItem>
-                        <SelectItem value="DAKWAH_TSAQOFAH">Dakwah wa Tsaqofah</SelectItem>
-                        <SelectItem value="SYARIAH_ISLAMIYAH">Syariah Islamiyah</SelectItem>
-                        <SelectItem value="SYARIAH_QANUN">Syariah wal Qonun</SelectItem>
-                        <SelectItem value="BAHASA_ARAB_AMMAH">Lughoh Arabiyah Ammah</SelectItem>
-                        <SelectItem value="TARIKH_HADHARAH">Tarikh wal Hadharah</SelectItem>
-                        <SelectItem value="OTHER">Lainnya</SelectItem>
+                        <SelectItem value="TAFSIR_ULUMUL_QURAN">
+                          {t('Form.Options.Major.TAFSIR_ULUMUL_QURAN')}
+                        </SelectItem>
+                        <SelectItem value="HADITS_ULUM">
+                          {t('Form.Options.Major.HADITS_ULUM')}
+                        </SelectItem>
+                        <SelectItem value="AQIDAH_FALSAFAH">
+                          {t('Form.Options.Major.AQIDAH_FALSAFAH')}
+                        </SelectItem>
+                        <SelectItem value="DAKWAH_TSAQOFAH">
+                          {t('Form.Options.Major.DAKWAH_TSAQOFAH')}
+                        </SelectItem>
+                        <SelectItem value="SYARIAH_ISLAMIYAH">
+                          {t('Form.Options.Major.SYARIAH_ISLAMIYAH')}
+                        </SelectItem>
+                        <SelectItem value="SYARIAH_QANUN">
+                          {t('Form.Options.Major.SYARIAH_QANUN')}
+                        </SelectItem>
+                        <SelectItem value="BAHASA_ARAB_AMMAH">
+                          {t('Form.Options.Major.BAHASA_ARAB_AMMAH')}
+                        </SelectItem>
+                        <SelectItem value="TARIKH_HADHARAH">
+                          {t('Form.Options.Major.TARIKH_HADHARAH')}
+                        </SelectItem>
+                        <SelectItem value="OTHER">{t('Form.Options.Major.OTHER')}</SelectItem>
                       </SelectContent>
                     </Select>
                     {isOtherMajor && (
                       <Input
-                        placeholder="Masukkan nama jurusan lainnya"
+                        placeholder={t('Form.Options.Major.OTHER')}
                         value={otherMajor}
                         onChange={(e) => {
                           setOtherMajor(e.target.value)
@@ -666,7 +716,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      Jumlah Juz Al Quran yang dihafal
+                      {t('Form.Labels.QuranMemorization')}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -674,7 +724,10 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         min="0"
                         max="30"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value)
+                          field.onChange(isNaN(val) ? 0 : val)
+                        }}
                         className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                       />
                     </FormControl>
@@ -710,7 +763,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-[#3E2522] font-semibold">
-                            Siap hadiri pendaftaran
+                            {t('Form.Labels.ShofiReadyAttend')}
                           </FormLabel>
                         </div>
                       </FormItem>
@@ -721,7 +774,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     name="predicate"
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
-                        <FormLabel className="text-[#3E2522] font-semibold">Predikat</FormLabel>
+                        <FormLabel className="text-[#3E2522] font-semibold">
+                          {t('Form.Labels.Predicate')}
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
@@ -749,7 +804,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
                         <FormLabel className="text-[#3E2522] font-semibold">
-                          Nilai Akumulatif
+                          {t('Form.Labels.CumulativeScore')}
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -780,7 +835,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   />
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-medium text-[#3E2522]">
-                      Foto Bukti Kelulusan (Syahadah/Kasyfu/Nilai Tingkat 4)
+                      {t('Form.Labels.SyahadahPhoto')}
                     </label>
                     <Input
                       type="file"
@@ -795,10 +850,12 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                       className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                     />
                     {uploadingSyahadah && (
-                      <p className="text-sm text-blue-600 animate-pulse">Mengupload...</p>
+                      <p className="text-sm text-blue-600 animate-pulse">
+                        {t('Form.Upload.Uploading')}
+                      </p>
                     )}
                     {syahadahUploaded && (
-                      <p className="text-sm text-green-600">Foto berhasil diupload</p>
+                      <p className="text-sm text-green-600">{t('Messages.UploadSuccess')}</p>
                     )}
                   </div>
                 </div>
@@ -819,7 +876,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-[#3E2522] font-semibold">
-                            Siap hadiri pendaftaran
+                            {t('Form.Labels.TashfiyahReadyAttend')}
                           </FormLabel>
                         </div>
                       </FormItem>
@@ -839,7 +896,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-[#3E2522] font-semibold">
-                            Siap serahkan bukti kelulusan
+                            {t('Form.Labels.TashfiyahReadySubmitProof')}
                           </FormLabel>
                         </div>
                       </FormItem>
@@ -859,7 +916,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-[#3E2522] font-semibold">
-                            Tidak lulus = tidak ikut wisuda
+                            {t('Form.Labels.TashfiyahNoGraduationIfFailed')}
                           </FormLabel>
                         </div>
                       </FormItem>
@@ -879,7 +936,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-[#3E2522] font-semibold">
-                            Tidak lulus = tetap dapat atribut
+                            {t('Form.Labels.TashfiyahStillGetAttributes')}
                           </FormLabel>
                         </div>
                       </FormItem>
@@ -902,7 +959,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel className="text-[#3E2522] font-semibold">Siap hadir</FormLabel>
+                          <FormLabel className="text-[#3E2522] font-semibold">
+                            {t('Form.Labels.AtributReadyAttend')}
+                          </FormLabel>
                         </div>
                       </FormItem>
                     )}
@@ -913,7 +972,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
                         <FormLabel className="text-[#3E2522] font-semibold">
-                          Paket Atribut
+                          {t('Form.Labels.AttributePackage')}
                         </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
@@ -923,11 +982,13 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="SELENDANG_PIN_MEDALI">
-                              Selendang, Pin, dan Medali
+                              {t('Form.Options.AttributePackage.SELENDANG_PIN_MEDALI')}
                             </SelectItem>
-                            <SelectItem value="PLAKAT">Plakat</SelectItem>
+                            <SelectItem value="PLAKAT">
+                              {t('Form.Options.AttributePackage.PLAKAT')}
+                            </SelectItem>
                             <SelectItem value="LENGKAP">
-                              Selendang, Pin, Medali, dan Plakat
+                              {t('Form.Options.AttributePackage.LENGKAP')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -944,18 +1005,22 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   render={({ field }) => (
                     <FormItem className="transition-all duration-300 hover:scale-105">
                       <FormLabel className="text-[#3E2522] font-semibold">
-                        Melanjutkan ke S2?
+                        {t('Form.Labels.ContinuingStudy')}
                       </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                            <SelectValue placeholder="Pilih" />
+                            <SelectValue placeholder={t('Form.Labels.ContinuingStudy')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="YES">Ya</SelectItem>
-                          <SelectItem value="NO">Tidak</SelectItem>
-                          <SelectItem value="UNDECIDED">Belum Memutuskan</SelectItem>
+                          <SelectItem value="YES">
+                            {t('Form.Options.ContinuingStudy.YES')}
+                          </SelectItem>
+                          <SelectItem value="NO">{t('Form.Options.ContinuingStudy.NO')}</SelectItem>
+                          <SelectItem value="UNDECIDED">
+                            {t('Form.Options.ContinuingStudy.UNDECIDED')}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -970,7 +1035,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     name="kulliyah"
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
-                        <FormLabel className="text-[#3E2522] font-semibold">Kulliyah</FormLabel>
+                        <FormLabel className="text-[#3E2522] font-semibold">
+                          {t('Form.Labels.Kulliyah')}
+                        </FormLabel>
                         <Select
                           onValueChange={(value) => {
                             if (value === 'OTHER') {
@@ -987,24 +1054,31 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         >
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                              <SelectValue placeholder="Pilih kulliyah" />
+                              <SelectValue placeholder={t('Form.Labels.Kulliyah')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="ULUUM_ISLAMIYAH">
-                              Kulliyah Uluum Islamiyah
+                              {t('Form.Options.Kulliyah.ULUUM_ISLAMIYAH')}
                             </SelectItem>
-                            <SelectItem value="DIRASAT_ULYA">Kulliyah Dirasat Ulya</SelectItem>
+                            <SelectItem value="DIRASAT_ULYA">
+                              {t('Form.Options.Kulliyah.DIRASAT_ULYA')}
+                            </SelectItem>
                             <SelectItem value="DIRASAT_ISLAMIYAH_ARABIAH">
-                              Kulliyah Dirasat Islamiah Wa Arabiah
+                              {t('Form.Options.Kulliyah.DIRASAT_ISLAMIYAH_ARABIAH')}
                             </SelectItem>
-                            <SelectItem value="OTHER">Lainnya</SelectItem>
-                            <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
+                            <SelectItem value="OTHER">
+                              {t('Form.Options.Kulliyah.OTHER')}
+                            </SelectItem>
+                            <SelectItem value="TIDAK ADA">
+                              {t('Form.Options.Kulliyah.TIDAK_ADA') ||
+                                t('Form.Options.Kulliyah.TIDAK ADA')}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         {isOtherKulliyah && (
                           <Input
-                            placeholder="Masukkan nama kulliyah lainnya"
+                            placeholder={t('Form.Options.Kulliyah.OTHER')}
                             value={otherKulliyah}
                             onChange={(e) => {
                               setOtherKulliyah(e.target.value)
@@ -1022,7 +1096,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     name="syubah"
                     render={({ field }) => (
                       <FormItem className="transition-all duration-300 hover:scale-105">
-                        <FormLabel className="text-[#3E2522] font-semibold">Syu'bah</FormLabel>
+                        <FormLabel className="text-[#3E2522] font-semibold">
+                          {t('Form.Labels.Syubah')}
+                        </FormLabel>
                         <Select
                           onValueChange={(value) => {
                             if (value === 'OTHER') {
@@ -1039,28 +1115,48 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                         >
                           <FormControl>
                             <SelectTrigger className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors">
-                              <SelectValue placeholder="Pilih syu'bah" />
+                              <SelectValue placeholder={t('Form.Labels.Syubah')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="TAFSIR_ULUMUL_QURAN">
-                              Tafsir wa Ulumul Qur'an
+                              {t('Form.Options.Syubah.TAFSIR_ULUMUL_QURAN')}
                             </SelectItem>
-                            <SelectItem value="HADITS_ULUM">Hadits wa Ulumul Hadits</SelectItem>
-                            <SelectItem value="AQIDAH_FALSAFAH">Aqidah wa Falsafah</SelectItem>
-                            <SelectItem value="FIQH_AM">Fiqh Am</SelectItem>
-                            <SelectItem value="FIQIH_MUQARRAN">Fiqih Muqarran</SelectItem>
-                            <SelectItem value="USHUL_FIQH">Ushul Fiqh</SelectItem>
-                            <SelectItem value="LUGHAYWIYAT">Lughawiyyat</SelectItem>
-                            <SelectItem value="BALAGHAH_NAQD">Balaghah Wa Naqd</SelectItem>
-                            <SelectItem value="ADAB_NAQD">Adab Wa Naqd</SelectItem>
-                            <SelectItem value="OTHER">Lainnya</SelectItem>
-                            <SelectItem value="TIDAK ADA">Tidak Ada</SelectItem>
+                            <SelectItem value="HADITS_ULUM">
+                              {t('Form.Options.Syubah.HADITS_ULUM')}
+                            </SelectItem>
+                            <SelectItem value="AQIDAH_FALSAFAH">
+                              {t('Form.Options.Syubah.AQIDAH_FALSAFAH')}
+                            </SelectItem>
+                            <SelectItem value="FIQH_AM">
+                              {t('Form.Options.Syubah.FIQH_AM')}
+                            </SelectItem>
+                            <SelectItem value="FIQIH_MUQARRAN">
+                              {t('Form.Options.Syubah.FIQIH_MUQARRAN')}
+                            </SelectItem>
+                            <SelectItem value="USHUL_FIQH">
+                              {t('Form.Options.Syubah.USHUL_FIQH')}
+                            </SelectItem>
+                            <SelectItem value="LUGHAYWIYAT">
+                              {t('Form.Options.Syubah.LUGHAYWIYAT')}
+                            </SelectItem>
+                            <SelectItem value="BALAGHAH_NAQD">
+                              {t('Form.Options.Syubah.BALAGHAH_NAQD')}
+                            </SelectItem>
+                            <SelectItem value="ADAB_NAQD">
+                              {t('Form.Options.Syubah.ADOB_NAQD') ||
+                                t('Form.Options.Syubah.ADAB_NAQD')}
+                            </SelectItem>
+                            <SelectItem value="OTHER">{t('Form.Options.Syubah.OTHER')}</SelectItem>
+                            <SelectItem value="TIDAK ADA">
+                              {t('Form.Options.Syubah.TIDAK_ADA') ||
+                                t('Form.Options.Syubah.TIDAK ADA')}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         {isOtherSyubah && (
                           <Input
-                            placeholder="Masukkan nama syu'bah lainnya"
+                            placeholder={t('Form.Options.Syubah.OTHER')}
                             value={otherSyubah}
                             onChange={(e) => {
                               setOtherSyubah(e.target.value)
@@ -1086,12 +1182,13 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-[#3E2522]/10 to-[#5A3A2F]/10 p-4 rounded-lg">
                 <p className="text-sm text-[#3E2522] font-medium">
-                  <strong>Informasi:</strong> Upload foto diri Anda dan setujui syarat & ketentuan
-                  untuk melanjutkan.
+                  <strong>{t('Page.Badge')}:</strong> {t('Form.Upload.Info')}
                 </p>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#3E2522]">Foto Diri *</label>
+                <label className="text-sm font-medium text-[#3E2522]">
+                  {t('Form.Labels.Photo')}
+                </label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -1105,13 +1202,15 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
                 />
                 {uploadingPhoto && (
-                  <p className="text-sm text-blue-600 animate-pulse">Mengupload foto...</p>
+                  <p className="text-sm text-blue-600 animate-pulse">
+                    {t('Form.Upload.Uploading')}
+                  </p>
                 )}
                 {photoUploaded && !uploadingPhoto && (
-                  <p className="text-sm text-green-600">✓ Foto berhasil diupload</p>
+                  <p className="text-sm text-green-600">{t('Form.Upload.Success')}</p>
                 )}
                 {!photoUploaded && !uploadingPhoto && (
-                  <p className="text-sm text-red-600">Foto belum diupload</p>
+                  <p className="text-sm text-red-600">{t('Form.Upload.NotUploaded')}</p>
                 )}
               </div>
               <FormField
@@ -1128,7 +1227,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-[#3E2522] font-semibold">
-                        Persetujuan Syarat & Ketentuan *
+                        {t('Form.Labels.TermsAgreement')}
                       </FormLabel>
                     </div>
                     <FormMessage />
@@ -1141,36 +1240,35 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       )
     case 4: {
       const data = form.getValues()
-
-      const genderLabel: Record<string, string> = { L: 'Laki-laki', P: 'Perempuan' }
+      const genderLabel: Record<string, string> = {
+        L: t('Form.Options.Gender.L'),
+        P: t('Form.Options.Gender.P'),
+      }
       const registrantTypeLabel: Record<string, string> = {
-        SHOFI: 'Shofi',
-        TASHFIYAH: 'Tashfiyah',
-        ATRIBUT: 'Pembeli Atribut',
+        SHOFI: t('Form.Options.RegistrantType.SHOFI'),
+        TASHFIYAH: t('Form.Options.RegistrantType.TASHFIYAH'),
+        ATRIBUT: t('Form.Options.RegistrantType.ATRIBUT'),
       }
       const continuingStudyLabel: Record<string, string> = {
-        YES: 'Ya',
-        NO: 'Tidak',
-        UNDECIDED: 'Belum Memutuskan',
+        YES: t('Common.Yes'),
+        NO: t('Common.No'),
+        UNDECIDED: t('Form.Options.ContinuingStudy.UNDECIDED'),
       }
-
       const predicateLabel: Record<string, string> = {
-        MUMTAZ_MMS: "Mumtaz Ma'a Martabati Syarof",
-        MUMTAZ: 'Mumtaz',
-        JAYYID_JIDDAN_MMS: "Jayyid Jiddan Ma'a Martabati Syarof",
-        JAYYID_JIDDAN: 'Jayyid Jiddan',
-        JAYYID: 'Jayyid',
-        MAQBUL: 'Maqbul',
-        RASIB: 'Rasib',
-        DHAIF: 'Dhaif',
+        MUMTAZ_MMS: t('Form.Options.Predicate.MUMTAZ_MMS'),
+        MUMTAZ: t('Form.Options.Predicate.MUMTAZ'),
+        JAYYID_JIDDAN_MMS: t('Form.Options.Predicate.JAYYID_JIDDAN_MMS'),
+        JAYYID_JIDDAN: t('Form.Options.Predicate.JAYYID_JIDDAN'),
+        JAYYID: t('Form.Options.Predicate.JAYYID'),
+        MAQBUL: t('Form.Options.Predicate.MAQBUL'),
+        RASIB: t('Form.Options.Predicate.RASIB'),
+        DHAIF: t('Form.Options.Predicate.DHAIF'),
       }
-
       const attributePackageLabel: Record<string, string> = {
-        SELENDANG_PIN_MEDALI: 'Selendang + Pin + Medali',
-        PLAKAT: 'Plakat',
-        LENGKAP: 'Paket Lengkap',
+        SELENDANG_PIN_MEDALI: t('Form.Options.AttributePackage.SELENDANG_PIN_MEDALI'),
+        PLAKAT: t('Form.Options.AttributePackage.PLAKAT'),
+        LENGKAP: t('Form.Options.AttributePackage.LENGKAP'),
       }
-
       const boolIcon = (v?: boolean) => (
         <span
           className={
@@ -1180,7 +1278,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
               : 'bg-red-50 text-red-600 ring-red-400/40')
           }
         >
-          {v ? '✓ Ya' : '✗ Tidak'}
+          {v ? '✓ ' + t('Common.Yes') : '✗ ' + t('Common.No')}
         </span>
       )
 
@@ -1217,96 +1315,113 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       )
 
       const basicRows: Row[] = [
-        { label: 'Tipe Pendaftar', value: chip(registrantTypeLabel[data.registrant_type]) },
-        { label: 'Nama Latin', value: chip(data.name) },
-        { label: 'Nama Arab', value: chip(data.name_arabic) },
-        { label: 'Jenis Kelamin', value: chip(genderLabel[data.gender]) },
-        { label: 'Email', value: chip(data.email) },
-        { label: 'Kewarganegaraan', value: chip(data.nationality) },
         {
-          label: 'Nomor Paspor',
+          label: t('Form.Labels.RegistrantType'),
+          value: chip(registrantTypeLabel[data.registrant_type]),
+        },
+        { label: t('Form.Labels.Name'), value: chip(data.name) },
+        { label: t('Form.Labels.NameArabic'), value: chip(data.name_arabic) },
+        { label: t('Form.Labels.Gender'), value: chip(genderLabel[data.gender]) },
+        { label: t('Form.Labels.Email'), value: chip(data.email) },
+        { label: t('Form.Labels.Nationality'), value: chip(data.nationality) },
+        {
+          label: t('Form.Labels.PassportNumber'),
           value: chip(
             data.passport_number && data.passport_number.trim() !== '' ? data.passport_number : '—',
           ),
         },
-        { label: 'WhatsApp', value: chip(data.whatsapp) },
-        { label: 'Telepon', value: chip(data.phone_number || '—') },
-        { label: 'Kekeluargaan', value: chip(data.kekeluargaan) },
+        { label: t('Form.Labels.WhatsApp'), value: chip(data.whatsapp) },
+        { label: t('Form.Labels.PhoneNumber'), value: chip(data.phone_number || '—') },
+        { label: t('Form.Labels.Kekeluargaan'), value: chip(data.kekeluargaan) },
       ]
 
       const educationRows: Row[] = [
-        { label: 'Universitas', value: chip(data.university) },
-        { label: 'Jenjang', value: chip(data.education_level) },
-        { label: 'Tahun Masuk', value: chip(data.first_enrollment_year) },
-        { label: 'Tahun Selesai', value: chip(data.graduation_year) },
-        { label: 'Fakultas', value: chip(data.faculty) },
-        { label: 'Jurusan', value: chip(data.major) },
-        { label: 'Hafalan Juz', value: chip(data.quran_memorization) },
-        { label: 'Melanjutkan S2', value: chip(continuingStudyLabel[data.continuing_study]) },
+        { label: t('Form.Labels.University'), value: chip(data.university) },
+        { label: t('Form.Labels.EducationLevel'), value: chip(data.education_level) },
+        { label: t('Form.Labels.FirstEnrollmentYear'), value: chip(data.first_enrollment_year) },
+        { label: t('Form.Labels.GraduationYear'), value: chip(data.graduation_year) },
+        { label: t('Form.Labels.Faculty'), value: chip(data.faculty) },
+        { label: t('Form.Labels.Major'), value: chip(data.major) },
+        { label: t('Form.Labels.QuranMemorization'), value: chip(data.quran_memorization) },
+        {
+          label: t('Form.Labels.ContinuingStudy'),
+          value: chip(continuingStudyLabel[data.continuing_study]),
+        },
       ]
 
       if (data.education_level === 'S1' && data.continuing_study === 'YES') {
         educationRows.push(
-          { label: 'Kulliyah', value: chip(data.kulliyah) },
-          { label: "Syu'bah", value: chip(data.syubah) },
+          { label: t('Form.Labels.Kulliyah'), value: chip(data.kulliyah) },
+          { label: t('Form.Labels.Syubah'), value: chip(data.syubah) },
         )
       }
 
       const specialRows: Row[] = []
       if (data.registrant_type === 'SHOFI') {
         specialRows.push(
-          { label: 'Siap Hadir', value: boolIcon(data.shofi_ready_attend) },
-          { label: 'Predikat', value: chip(predicateLabel[data.predicate]) },
-          { label: 'Nilai Akumulatif', value: chip(data.cumulative_score) },
-          { label: 'Foto Syahadah', value: boolIcon(!!data.syahadah_photo) },
+          { label: t('Form.Labels.ShofiReadyAttend'), value: boolIcon(data.shofi_ready_attend) },
+          { label: t('Form.Labels.Predicate'), value: chip(predicateLabel[data.predicate]) },
+          { label: t('Form.Labels.CumulativeScore'), value: chip(data.cumulative_score) },
+          { label: t('Form.Labels.SyahadahPhoto'), value: boolIcon(!!data.syahadah_photo) },
         )
       }
       if (data.registrant_type === 'TASHFIYAH') {
         specialRows.push(
-          { label: 'Siap Hadir', value: boolIcon(data.tashfiyah_ready_attend) },
-          { label: 'Serah Bukti Kelulusan', value: boolIcon(data.tashfiyah_ready_submit_proof) },
           {
-            label: 'Gagal = Tidak Wisuda',
+            label: t('Form.Labels.TashfiyahReadyAttend'),
+            value: boolIcon(data.tashfiyah_ready_attend),
+          },
+          {
+            label: t('Form.Labels.TashfiyahReadySubmitProof'),
+            value: boolIcon(data.tashfiyah_ready_submit_proof),
+          },
+          {
+            label: t('Form.Labels.TashfiyahNoGraduationIfFailed'),
             value: boolIcon(data.tashfiyah_no_graduation_if_failed),
           },
           {
-            label: 'Gagal Tetap Dapat Atribut',
+            label: t('Form.Labels.TashfiyahStillGetAttributes'),
             value: boolIcon(data.tashfiyah_still_get_attributes),
           },
         )
       }
       if (data.registrant_type === 'ATRIBUT') {
         specialRows.push(
-          { label: 'Siap Hadir', value: boolIcon(data.atribut_ready_attend) },
-          { label: 'Paket Atribut', value: chip(attributePackageLabel[data.attribute_package]) },
+          {
+            label: t('Form.Labels.AtributReadyAttend'),
+            value: boolIcon(data.atribut_ready_attend),
+          },
+          {
+            label: t('Form.Labels.AttributePackage'),
+            value: chip(attributePackageLabel[data.attribute_package]),
+          },
         )
       }
 
       const uploadRows: Row[] = [
-        { label: 'Foto Diri', value: boolIcon(!!data.photo) },
-        { label: 'Setuju S&K', value: boolIcon(data.terms_agreement) },
+        { label: t('Form.Labels.Photo'), value: boolIcon(!!data.photo) },
+        { label: t('Form.Labels.TermsAgreement'), value: boolIcon(data.terms_agreement) },
       ]
 
       const sections = [
-        { title: 'Identitas Dasar', rows: basicRows },
-        { title: 'Pendidikan', rows: educationRows },
-        ...(specialRows.length > 0 ? [{ title: 'Detail Khusus', rows: specialRows }] : []),
-        { title: 'Upload & Persetujuan', rows: uploadRows },
+        { title: t('Steps.1.Title'), rows: basicRows },
+        { title: t('Steps.2.Title'), rows: educationRows },
+        ...(specialRows.length > 0 ? [{ title: t('Steps.3.Title'), rows: specialRows }] : []),
+        { title: t('Steps.4.Title'), rows: uploadRows },
       ]
 
       return (
         <div className="p-4 md:p-6 animate-in fade-in slide-in-from-top-2 duration-500">
           <div className="bg-gradient-to-tr from-white to-white/70 backdrop-blur-sm p-6 md:p-8 rounded-xl ring-1 ring-[#3E2522]/10 shadow-sm">
             <div className="mb-6 flex flex-col items-center gap-3 text-center">
-              <h3 className="text-2xl font-bold tracking-tight text-[#3E2522]">Ringkasan Data</h3>
-              <p className="max-w-2xl text-sm text-[#3E2522]/70">
-                Pastikan seluruh data sudah benar. Anda dapat kembali untuk mengubah jika masih ada
-                yang perlu diperbaiki sebelum mengirim.
-              </p>
+              <h3 className="text-2xl font-bold tracking-tight text-[#3E2522]">
+                {t('Form.Summary.Title')}
+              </h3>
+              <p className="max-w-2xl text-sm text-[#3E2522]/70">{t('Form.Summary.Description')}</p>
               <div className="flex items-center gap-2 rounded-full bg-[#3E2522]/10 px-3 py-1 text-[11px] font-medium text-[#3E2522] ring-1 ring-[#3E2522]/20">
-                <span>Langkah Terakhir</span>
+                <span>{t('Form.Summary.LastStep')}</span>
                 <span className="h-1 w-1 rounded-full bg-[#3E2522]/40" />
-                <span>Review</span>
+                <span>{t('Form.Summary.Review')}</span>
               </div>
             </div>
             <div className="space-y-6">
@@ -1317,7 +1432,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             <div className="mt-8 flex flex-col items-center gap-4">
               <details className="w-full">
                 <summary className="cursor-pointer select-none text-xs font-semibold tracking-wide text-[#3E2522]/70 underline-offset-4 hover:underline">
-                  Lihat JSON Mentah (Opsional)
+                  {t('Form.Summary.RawJSON')}
                 </summary>
                 <pre className="mt-3 max-h-72 overflow-auto rounded-lg border border-[#3E2522]/15 bg-[#3E2522]/5 p-4 text-[11px] leading-snug text-[#3E2522]">
                   {JSON.stringify(data, null, 2)}
@@ -1329,17 +1444,17 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 onClick={() => {
                   try {
                     navigator.clipboard.writeText(JSON.stringify(data, null, 2))
-                    toast.success('Disalin ke clipboard')
+                    toast.success(t('Messages.CopySuccess'))
                   } catch {
-                    toast.error('Gagal menyalin')
+                    toast.error(t('Messages.CopyError'))
                   }
                 }}
                 className="border-[#3E2522]/30 text-[#3E2522] hover:bg-[#3E2522]/10"
               >
-                Salin JSON
+                {t('Form.Summary.CopyJSON')}
               </Button>
               <p className="text-center text-[#3E2522] text-sm font-medium">
-                Tekan tombol Kirim untuk menyelesaikan pendaftaran.
+                {t('Form.Summary.FinalNote')}
               </p>
             </div>
           </div>

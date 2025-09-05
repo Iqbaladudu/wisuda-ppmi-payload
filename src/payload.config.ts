@@ -13,6 +13,9 @@ import { Registrants } from './collections/Registrants'
 import GoogleTokens from './collections/GoogleTokens'
 import GoogleSheets from './collections/GoogleSheets'
 import { s3Storage } from '@payloadcms/storage-s3'
+import { Syahadah } from './collections/Syahadah'
+import { ProfilePhoto } from './collections/ProfilePhoto'
+import { ConfirmationPDF } from './collections/ConfirmationPDF'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -30,16 +33,22 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Users, Media, Registrants, GoogleTokens, GoogleSheets],
+  collections: [
+    Users,
+    Media,
+    Registrants,
+    GoogleTokens,
+    GoogleSheets,
+    Syahadah,
+    ProfilePhoto,
+    ConfirmationPDF,
+  ],
   cors: [process.env.CORS_ORIGIN || 'http://localhost:3000'],
   csrf: [process.env.CSRF_ORIGIN || 'http://localhost:3000'],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
-  },
-  routes: {
-    api: '/api',
   },
   db: postgresAdapter({
     pool: {
@@ -50,7 +59,11 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     s3Storage({
-      collections: { media: true },
+      collections: {
+        media: {
+          prefix: 'media',
+        },
+      },
       bucket: process.env.CLOUDFLARE_STORAGE_BUCKET_NAME!,
       config: {
         credentials: {

@@ -95,8 +95,7 @@
         "TashfiyahStillGetAttributes": "Tidak lulus = tetap dapat atribut",
         "AtributReadyAttend": "Siap hadir",
         "AttributePackage": "Paket Atribut",
-        "Photo": "Foto Diri *",
-        "TermsAgreement": "Persetujuan Syarat & Ketentuan *"
+        "Photo": "Foto Diri *"
       },
       "Placeholders": {
         "Name": "Contoh: Ahmad Abdullah Rahman",
@@ -105,7 +104,8 @@
         "Nationality": "Contoh: Indonesia, Malaysia, dll",
         "PassportNumber": "Contoh: A12345678",
         "PhoneNumber": "Contoh: 08123456789",
-        "WhatsApp": "Contoh: 08123456789"
+        "WhatsApp": "Contoh: 08123456789",
+        "University": "Contoh: Universitas Al Azhar"
       },
       "Options": {
         "RegistrantType": {
@@ -116,10 +116,6 @@
         "Gender": {
           "L": "Laki-laki",
           "P": "Perempuan"
-        },
-        "University": {
-          "AL_AZHAR": "Al Azhar",
-          "OTHER": "Lainnya"
         },
         "EducationLevel": {
           "S1": "Strata 1/Sarjana",
@@ -236,7 +232,9 @@
       "UploadError": "Upload gagal: ",
       "CopySuccess": "Disalin ke clipboard",
       "CopyError": "Gagal menyalin",
-      "StepOf": "Langkah {current} dari {total}"
+      "CountriesLoadError": "Gagal memuat daftar negara",
+      "StepOf": "Langkah {current} dari {total}",
+      "RegistrationSuccess": "Pendaftaran berhasil! ID: {id}"
     },
     "Errors": {
       "NameRequired": "Nama lengkap wajib diisi",
@@ -253,7 +251,17 @@
       "ContinuingStudyRequired": "Field melanjutkan studi dan detailnya wajib untuk S1",
       "ShofiRequired": "Field Shofi wajib diisi",
       "TashfiyahRequired": "Field Tashfiyah wajib diisi",
-      "TermsRequired": "Persetujuan syarat & ketentuan wajib dicentang"
+      "TermsRequired": "Persetujuan syarat & ketentuan wajib dicentang",
+      "PhotoRequired": "Foto diri wajib diupload",
+      "SyahadahPhotoRequired": "Foto syahadah wajib diupload",
+      "SubmitFailed": "Submit gagal",
+      "ServerError": "Error dari server",
+      "NetworkError": "Error jaringan:",
+      "UnknownError": "Terjadi kesalahan tidak dikenal"
+    },
+    "Common": {
+      "Yes": "Ya",
+      "No": "Tidak"
     }
   }
 }

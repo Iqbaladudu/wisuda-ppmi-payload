@@ -72,6 +72,9 @@ export interface Config {
     registrants: Registrant;
     'google-tokens': GoogleToken;
     'google-sheets-creds': GoogleSheetsCred;
+    syahadah: Syahadah;
+    'profile-photo': ProfilePhoto;
+    'confirmation-pdf': ConfirmationPdf;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,6 +86,9 @@ export interface Config {
     registrants: RegistrantsSelect<false> | RegistrantsSelect<true>;
     'google-tokens': GoogleTokensSelect<false> | GoogleTokensSelect<true>;
     'google-sheets-creds': GoogleSheetsCredsSelect<false> | GoogleSheetsCredsSelect<true>;
+    syahadah: SyahadahSelect<false> | SyahadahSelect<true>;
+    'profile-photo': ProfilePhotoSelect<false> | ProfilePhotoSelect<true>;
+    'confirmation-pdf': ConfirmationPdfSelect<false> | ConfirmationPdfSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -150,6 +156,7 @@ export interface User {
 export interface Media {
   id: number;
   alt?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -202,58 +209,96 @@ export interface Registrant {
   first_enrollment_year: number;
   graduation_year: number;
   faculty: string;
-  major:
-    | 'TAFSIR_ULUMUL_QURAN'
-    | 'HADITS_ULUM'
-    | 'AQIDAH_FALSAFAH'
-    | 'DAKWAH_TSAQOFAH'
-    | 'SYARIAH_ISLAMIYAH'
-    | 'SYARIAH_QANUN'
-    | 'BAHASA_ARAB_AMMAH'
-    | 'TARIKH_HADHARAH'
-    | 'OTHER';
+  major: string;
   quran_memorization: number;
   /**
    * Otomatis dihitung dari graduation_year - first_enrollment_year
    */
   study_duration?: number | null;
   continuing_study?: ('YES' | 'NO' | 'UNDECIDED') | null;
-  kulliyah?: ('ULUUM_ISLAMIYAH' | 'DIRASAT_ULYA' | 'DIRASAT_ISLAMIYAH_ARABIAH' | 'OTHER' | 'TIDAK ADA') | null;
-  syubah?:
-    | (
-        | 'TAFSIR_ULUMUL_QURAN'
-        | 'HADITS_ULUM'
-        | 'AQIDAH_FALSAFAH'
-        | 'FIQH_AM'
-        | 'FIQIH_MUQARRAN'
-        | 'USHUL_FIQH'
-        | 'LUGHAYWIYAT'
-        | 'BALAGHAH_NAQD'
-        | 'ADAB_NAQD'
-        | 'OTHER'
-        | 'TIDAK ADA'
-      )
-    | null;
+  kulliyah?: string | null;
+  syubah?: string | null;
   shofi_ready_attend?: boolean | null;
   predicate?:
     | ('MUMTAZ_MMS' | 'MUMTAZ' | 'JAYYID_JIDDAN_MMS' | 'JAYYID_JIDDAN' | 'JAYYID' | 'MAQBUL' | 'RASIB' | 'DHAIF')
     | null;
   cumulative_score?: number | null;
-  syahadah_photo?: (number | null) | Media;
+  syahadah_photo?: (number | null) | Syahadah;
   tashfiyah_ready_attend?: boolean | null;
   tashfiyah_ready_submit_proof?: boolean | null;
   tashfiyah_no_graduation_if_failed?: boolean | null;
   tashfiyah_still_get_attributes?: boolean | null;
   atribut_ready_attend?: boolean | null;
   attribute_package?: ('SELENDANG_PIN_MEDALI' | 'PLAKAT' | 'LENGKAP') | null;
-  photo: number | Media;
+  photo: number | ProfilePhoto;
   terms_agreement: boolean;
   /**
    * Otomatis di-generate berdasarkan ID database
    */
   reg_id?: string | null;
+  /**
+   * Otomatis di-generate setelah perubahan data
+   */
+  confirmation_pdf?: (number | null) | ConfirmationPdf;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "syahadah".
+ */
+export interface Syahadah {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "profile-photo".
+ */
+export interface ProfilePhoto {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "confirmation-pdf".
+ */
+export interface ConfirmationPdf {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -322,6 +367,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'google-sheets-creds';
         value: number | GoogleSheetsCred;
+      } | null)
+    | ({
+        relationTo: 'syahadah';
+        value: number | Syahadah;
+      } | null)
+    | ({
+        relationTo: 'profile-photo';
+        value: number | ProfilePhoto;
+      } | null)
+    | ({
+        relationTo: 'confirmation-pdf';
+        value: number | ConfirmationPdf;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -393,6 +450,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -444,6 +502,7 @@ export interface RegistrantsSelect<T extends boolean = true> {
   photo?: T;
   terms_agreement?: T;
   reg_id?: T;
+  confirmation_pdf?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -477,6 +536,60 @@ export interface GoogleSheetsCredsSelect<T extends boolean = true> {
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "syahadah_select".
+ */
+export interface SyahadahSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "profile-photo_select".
+ */
+export interface ProfilePhotoSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "confirmation-pdf_select".
+ */
+export interface ConfirmationPdfSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
