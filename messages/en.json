@@ -1,0 +1,36 @@
+{
+  "HomePage": "Home",
+  "IntroPage": {
+    "Metadata": {
+      "Title": "Graduation Registration Intro",
+      "Description": "Online graduation registration requirements"
+    },
+    "Badge": "Official Information",
+    "Heading": "Online Registration Requirements",
+    "Subheading": "Read each requirement carefully before proceeding. The accuracy and completeness of your data are crucial for registration validation.",
+    "StartButton": "Start Registration Now",
+    "Info": "Make sure all files are clear and readable",
+    "Requirements": {
+      "1": "Complete the online registration form via the official website within the designated period.",
+      "2": "Upload your best ID Photo to be displayed in the slide show.",
+      "3": "Provide academic data according to the latest transcript.",
+      "4": "Ensure all uploaded documents and data are clear, accurate, and valid."
+    },
+    "SidePanel": {
+      "Title": "Ready to Register?",
+      "Description": "Click the button below to start filling out the form. You can return to this page anytime to review the requirements.",
+      "Button": "Start Registration",
+      "Note": "Ensure your data is correct before submitting"
+    },
+    "ImportantNotes": {
+      "Title": "Important Notes",
+      "1": "Use a device with a stable connection.",
+      "2": "Prepare digital documents before starting.",
+      "3": "Avoid refreshing during the submission process."
+    },
+    "Warning": "Invalid data may result in rejection or delayed verification."
+  },
+  "Navbar": {
+    "joinNow": "Join Now"
+  }
+}

@@ -182,19 +182,25 @@ const CountdownTimer: React.FC<{ targetDate: Date | null }> = ({ targetDate }) =
 }
 
 // Lazy load stats heavy section (no SSR) so hero paints instantly
-const LazyHeroStatsSection = dynamic(() => import('./HeroStatsSection').then(m => m.HeroStatsSection), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full max-w-6xl mx-auto flex flex-col items-center gap-12" aria-label="Memuat statistik">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full animate-pulse opacity-70">
-        {Array.from({length:8}).map((_,i) => (
-          <div key={i} className="h-28 rounded-xl border border-white/10 bg-white/[0.06]" />
-        ))}
+const LazyHeroStatsSection = dynamic(
+  () => import('./HeroStatsSection').then((m) => m.HeroStatsSection),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="w-full max-w-6xl mx-auto flex flex-col items-center gap-12"
+        aria-label="Memuat statistik"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full animate-pulse opacity-70">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-xl border border-white/10 bg-white/[0.06]" />
+          ))}
+        </div>
+        <div className="w-full h-40 rounded-2xl border border-white/10 bg-white/[0.04] animate-pulse" />
       </div>
-      <div className="w-full h-40 rounded-2xl border border-white/10 bg-white/[0.04] animate-pulse" />
-    </div>
-  )
-})
+    ),
+  },
+)
 
 export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
   date,

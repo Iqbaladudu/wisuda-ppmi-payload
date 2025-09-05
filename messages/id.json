@@ -1,0 +1,259 @@
+{
+  "HomePage": "Beranda",
+  "IntroPage": {
+    "Metadata": {
+      "Title": "Intro Pendaftaran Wisuda",
+      "Description": "Persyaratan pendaftaran wisuda online"
+    },
+    "Badge": "Informasi Resmi",
+    "Heading": "Persyaratan Pendaftaran Online Wisuda",
+    "Subheading": "Baca setiap poin persyaratan berikut sebelum melanjutkan. Kebenaran dan kelengkapan data sangat menentukan validasi pendaftaran Anda.",
+    "StartButton": "Mulai Pendaftaran Sekarang",
+    "Info": "Pastikan semua file jelas dan dapat dibaca",
+    "Requirements": {
+      "1": "Mengisi formulir pendaftaran online melalui website resmi pada waktu yang telah ditentukan.",
+      "2": "Mengunggah pas foto terbaik Anda untuk ditampilkan pada slide show.",
+      "3": "Mengisi data akademik sesuai transkrip nilai terakhir.",
+      "4": "Memastikan seluruh dokumen dan data yang diunggah jelas, benar, dan valid."
+    },
+    "SidePanel": {
+      "Title": "Siap Mendaftar?",
+      "Description": "Klik tombol di bawah untuk mulai mengisi formulir. Anda dapat kembali ke halaman ini kapan saja untuk meninjau persyaratan.",
+      "Button": "Mulai Pendaftaran",
+      "Note": "Pastikan data benar sebelum submit"
+    },
+    "ImportantNotes": {
+      "Title": "Catatan Penting",
+      "1": "Gunakan perangkat dengan koneksi stabil.",
+      "2": "Siapkan dokumen digital sebelum mulai.",
+      "3": "Hindari refresh saat proses submit."
+    },
+    "Warning": "Data yang tidak valid dapat menyebabkan penolakan atau penundaan verifikasi."
+  },
+  "Navbar": {
+    "joinNow": "Bergabung Sekarang"
+  },
+  "FormPage": {
+    "Page": {
+      "Badge": "Formulir Resmi",
+      "Heading": "Pendaftaran Wisuda PPMI",
+      "Description": "Silakan lengkapi setiap langkah form. Data Anda aman dan digunakan hanya untuk proses administrasi wisuda. Simpan kemajuan dengan menekan tombol selanjutnya. Anda dapat kembali kapan saja selama periode pendaftaran masih berlangsung."
+    },
+    "Steps": {
+      "1": {
+        "Title": "Identitas Dasar",
+        "Description": "Informasi pribadi dan kontak"
+      },
+      "2": {
+        "Title": "Pendidikan",
+        "Description": "Detail pendidikan dan akademik"
+      },
+      "3": {
+        "Title": "Detail Khusus",
+        "Description": "Field berdasarkan tipe pendaftar"
+      },
+      "4": {
+        "Title": "Upload & Persetujuan",
+        "Description": "Unggah dokumen dan setujui syarat"
+      },
+      "5": {
+        "Title": "Ringkasan & Kirim",
+        "Description": "Periksa data dan kirim pendaftaran"
+      }
+    },
+    "Form": {
+      "Info": "Field bertanda * wajib diisi. Periksa kembali sebelum melanjutkan.",
+      "Labels": {
+        "RegistrantType": "Tipe Pendaftar *",
+        "Name": "Nama Lengkap (Latin) *",
+        "NameArabic": "Nama Lengkap (Arab) *",
+        "Gender": "Jenis Kelamin *",
+        "Email": "Email *",
+        "Nationality": "Kewarganegaraan *",
+        "PassportNumber": "Nomor Paspor",
+        "PassportNumberRequired": "Nomor Paspor * (jika bukan WNI)",
+        "PhoneNumber": "Nomor Telepon",
+        "WhatsApp": "Nomor WhatsApp *",
+        "Kekeluargaan": "Kekeluargaan *",
+        "University": "Universitas",
+        "EducationLevel": "Jenjang Pendidikan",
+        "FirstEnrollmentYear": "Tahun Pertama Terdaftar",
+        "GraduationYear": "Tahun Menyelesaikan Pendidikan",
+        "Faculty": "Fakultas",
+        "Major": "Jurusan",
+        "QuranMemorization": "Jumlah Juz Al Quran yang dihafal",
+        "ContinuingStudy": "Melanjutkan ke S2?",
+        "Kulliyah": "Kulliyah",
+        "Syubah": "Syu'bah",
+        "ShofiReadyAttend": "Siap hadiri pendaftaran",
+        "Predicate": "Predikat",
+        "CumulativeScore": "Nilai Akumulatif",
+        "SyahadahPhoto": "Foto Syahadah",
+        "TashfiyahReadyAttend": "Siap hadiri pendaftaran",
+        "TashfiyahReadySubmitProof": "Siap serahkan bukti kelulusan",
+        "TashfiyahNoGraduationIfFailed": "Tidak lulus = tidak ikut wisuda",
+        "TashfiyahStillGetAttributes": "Tidak lulus = tetap dapat atribut",
+        "AtributReadyAttend": "Siap hadir",
+        "AttributePackage": "Paket Atribut",
+        "Photo": "Foto Diri *",
+        "TermsAgreement": "Persetujuan Syarat & Ketentuan *"
+      },
+      "Placeholders": {
+        "Name": "Contoh: Ahmad Abdullah Rahman",
+        "NameArabic": "Contoh: أحمد عبدالله الرحمن",
+        "Email": "Contoh: ahmad@example.com",
+        "Nationality": "Contoh: Indonesia, Malaysia, dll",
+        "PassportNumber": "Contoh: A12345678",
+        "PhoneNumber": "Contoh: 08123456789",
+        "WhatsApp": "Contoh: 08123456789"
+      },
+      "Options": {
+        "RegistrantType": {
+          "SHOFI": "Shofi",
+          "TASHFIYAH": "Tashfiyah",
+          "ATRIBUT": "Pembeli Atribut"
+        },
+        "Gender": {
+          "L": "Laki-laki",
+          "P": "Perempuan"
+        },
+        "University": {
+          "AL_AZHAR": "Al Azhar",
+          "OTHER": "Lainnya"
+        },
+        "EducationLevel": {
+          "S1": "Strata 1/Sarjana",
+          "S2": "Strata 2/Magister",
+          "S3": "Strata 3/Doktor"
+        },
+        "Faculty": {
+          "USHULUDDIN": "Ushuluddin",
+          "SYARIAH_QANUN": "Syariah wal Qonun",
+          "BAHASA_ARAB": "Lughoh Arabiyah",
+          "DIRASAT_BANIN": "Dirasat Islamiyah wal Arabiyah Lil Banin",
+          "DIRASAT_BANAT": "Dirasat Islamiyah wal Arabiyah Lil Banat",
+          "OTHER": "Lainnya"
+        },
+        "Major": {
+          "TAFSIR_ULUMUL_QURAN": "Tafsir wa Ulumul Quran",
+          "HADITS_ULUM": "Hadits wa Ulumul Hadits",
+          "AQIDAH_FALSAFAH": "Aqidah wal Falsafah",
+          "DAKWAH_TSAQOFAH": "Dakwah wa Tsaqofah",
+          "SYARIAH_ISLAMIYAH": "Syariah Islamiyah",
+          "SYARIAH_QANUN": "Syariah wal Qonun",
+          "BAHASA_ARAB_AMMAH": "Lughoh Arabiyah Ammah",
+          "TARIKH_HADHARAH": "Tarikh wal Hadharah",
+          "OTHER": "Lainnya"
+        },
+        "Kekeluargaan": {
+          "KMM": "Kesepakatan Mahasiswa Minangkabau",
+          "KMB": "Kesepakatan Mahasiswa Banten",
+          "KMJ": "Keluarga Mahasiswa Jambi",
+          "KPJ": "Keluarga Pelajar Jakarta",
+          "KMA": "Keluarga Mahasiswa Aceh",
+          "KSW": "Kelompok Studi Walisongo",
+          "KEMASS": "Keluarga Masyarakat Sumatera Selatan",
+          "KKS": "Kerukunan Keluarga Sulawesi",
+          "KSMR": "Kelompok Studi Mahasiswa Riau",
+          "KMNTB": "Keluarga Mahasiswa Nusa Tenggara & Bali",
+          "KMKM": "Keluarga Mahasiswa Kalimantan",
+          "IKMAL": "Ikatan Keluarga Mahasiswa Lampung",
+          "GAMAJATIM": "Keluarga Masyarakat Jawa Timur",
+          "HMMSU": "Himpunan Masyarakat dan Mahasiswa Sumatera Utara",
+          "FOSGAMA": "Forum Studi Keluarga Madura"
+        },
+        "ContinuingStudy": {
+          "YES": "Ya",
+          "NO": "Tidak",
+          "UNDECIDED": "Belum Memutuskan"
+        },
+        "Kulliyah": {
+          "ULUUM_ISLAMIYAH": "Kulliyah Uluum Islamiyah",
+          "DIRASAT_ULYA": "Kulliyah Dirasat Ulya",
+          "DIRASAT_ISLAMIYAH_ARABIAH": "Kulliyah Dirasat Islamiah Wa Arabiah",
+          "OTHER": "Lainnya",
+          "TIDAK_ADA": "Tidak Ada"
+        },
+        "Syubah": {
+          "TAFSIR_ULUMUL_QURAN": "Tafsir wa Ulumul Qur'an",
+          "HADITS_ULUM": "Hadits wa Ulumul Hadits",
+          "AQIDAH_FALSAFAH": "Aqidah wa Falsafah",
+          "FIQH_AM": "Fiqh Am",
+          "FIQIH_MUQARRAN": "Fiqih Muqarran",
+          "USHUL_FIQH": "Ushul Fiqh",
+          "LUGHAYWIYAT": "Lughawiyyat",
+          "BALAGHAH_NAQD": "Balaghah Wa Naqd",
+          "ADAB_NAQD": "Adab Wa Naqd",
+          "OTHER": "Lainnya",
+          "TIDAK_ADA": "Tidak Ada"
+        },
+        "Predicate": {
+          "MUMTAZ_MMS": "Mumtaz Ma'a Martabati Syarof",
+          "MUMTAZ": "Mumtaz",
+          "JAYYID_JIDDAN_MMS": "Jayyid Jiddan Ma'a Martabati Syarof",
+          "JAYYID_JIDDAN": "Jayyid Jiddan",
+          "JAYYID": "Jayyid",
+          "MAQBUL": "Maqbul",
+          "RASIB": "Rasib",
+          "DHAIF": "Dhaif"
+        },
+        "AttributePackage": {
+          "SELENDANG_PIN_MEDALI": "Selendang, Pin, dan Medali",
+          "PLAKAT": "Plakat",
+          "LENGKAP": "Selendang, Pin, Medali, dan Plakat"
+        }
+      },
+      "Upload": {
+        "Info": "Upload foto diri Anda dan setujui syarat & ketentuan untuk melanjutkan.",
+        "Uploading": "Mengupload foto...",
+        "Success": "✓ Foto berhasil diupload",
+        "NotUploaded": "Foto belum diupload"
+      },
+      "Summary": {
+        "Title": "Ringkasan Data",
+        "Description": "Pastikan seluruh data sudah benar. Anda dapat kembali untuk mengubah jika masih ada yang perlu diperbaiki sebelum mengirim.",
+        "LastStep": "Langkah Terakhir",
+        "Review": "Review",
+        "RawJSON": "Lihat JSON Mentah (Opsional)",
+        "CopyJSON": "Salin JSON",
+        "FinalNote": "Tekan tombol Kirim untuk menyelesaikan pendaftaran."
+      }
+    },
+    "Buttons": {
+      "Previous": "Sebelumnya",
+      "Next": "Selanjutnya",
+      "Submit": "Kirim",
+      "Validating": "Memvalidasi...",
+      "Submitting": "Mengirim..."
+    },
+    "Messages": {
+      "PreviousStep": "Kembali ke langkah sebelumnya",
+      "NextStep": "Berhasil ke langkah berikutnya",
+      "CheckFields": "Periksa kembali field yang belum valid",
+      "SendingData": "Mengirim data...",
+      "WaitSubmit": "Mohon tunggu proses submit",
+      "UploadSuccess": "File berhasil diupload!",
+      "UploadError": "Upload gagal: ",
+      "CopySuccess": "Disalin ke clipboard",
+      "CopyError": "Gagal menyalin",
+      "StepOf": "Langkah {current} dari {total}"
+    },
+    "Errors": {
+      "NameRequired": "Nama lengkap wajib diisi",
+      "NameMinWords": "Nama Latin harus minimal 2 kata",
+      "NameArabicMin": "Nama Arab minimal 3 karakter",
+      "NameArabicInvalid": "Nama Arab harus hanya mengandung karakter Arab valid",
+      "EmailInvalid": "Email tidak valid",
+      "NationalityRequired": "Kewarganegaraan wajib diisi",
+      "WhatsAppRequired": "WhatsApp wajib diisi",
+      "YearInvalid": "Tahun tidak valid",
+      "QuranMemorizationRange": "Hafalan Quran 0-30 juz",
+      "ScoreRange": "Nilai 0-100",
+      "PassportRequired": "Nomor paspor wajib jika bukan WNI",
+      "ContinuingStudyRequired": "Field melanjutkan studi dan detailnya wajib untuk S1",
+      "ShofiRequired": "Field Shofi wajib diisi",
+      "TashfiyahRequired": "Field Tashfiyah wajib diisi",
+      "TermsRequired": "Persetujuan syarat & ketentuan wajib dicentang"
+    }
+  }
+}
