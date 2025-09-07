@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ const useMultiStepForm = () => {
   const t = useTranslations('FormPage')
   const form = useForm<FormData>({
     // resolver: zodResolver(formSchema), // Using manual validation instead
+    mode: 'onChange',
     defaultValues: {
       registrant_type: 'SHOFI' as const,
       name: '',
@@ -20,7 +21,7 @@ const useMultiStepForm = () => {
       email: '',
       nationality: '',
       passport_number: '',
-      phone_number: '',
+      phone_number: undefined,
       whatsapp: '',
       kekeluargaan: 'KMM' as const,
       university: 'Al Azhar',
@@ -35,7 +36,7 @@ const useMultiStepForm = () => {
       syubah: 'TIDAK ADA' as const,
       shofi_ready_attend: false,
       predicate: 'MUMTAZ' as const,
-      cumulative_score: 0,
+      cumulative_score: null,
       syahadah_photo: '',
       tashfiyah_ready_attend: false,
       tashfiyah_ready_submit_proof: false,
@@ -47,6 +48,25 @@ const useMultiStepForm = () => {
       terms_agreement: false,
     },
   })
+
+  // Validation onChange
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (name && type === 'change') {
+        // Validate the specific field using Zod
+        const fieldSchema = formSchema.shape[name as keyof typeof formSchema.shape]
+        if (fieldSchema) {
+          const result = fieldSchema.safeParse(value[name])
+          if (!result.success) {
+            form.setError(name as keyof FormData, { message: result.error.issues[0].message })
+          } else {
+            form.clearErrors(name as keyof FormData)
+          }
+        }
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form])
 
   // Mutation for submitting the form
   const submitMutation = useMutation({

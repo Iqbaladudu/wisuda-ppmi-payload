@@ -181,7 +181,7 @@ export interface Registrant {
   gender: 'L' | 'P';
   email: string;
   nationality: string;
-  passport_number?: string | null;
+  passport_number: string;
   phone_number?: string | null;
   whatsapp: string;
   kekeluargaan?:

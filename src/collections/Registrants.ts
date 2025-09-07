@@ -118,14 +118,14 @@ const safeName = (name: string) =>
 
 // Validation functions
 const validateName = (name: string) => {
-  if (!name || name.trim().split(/\s+/).length < 3) {
-    throw new Error('Nama Latin harus minimal 3 kata')
+  if (!name || name.trim().split(/\s+/).length < 1) {
+    throw new Error('Nama Latin harus minimal 1 kata')
   }
 }
 
 const validateArabicName = (nameArabic: string) => {
-  if (!nameArabic || nameArabic.length < 3) {
-    throw new Error('Nama Arab harus minimal 3 karakter')
+  if (!nameArabic || nameArabic.trim().split(/\s+/).length < 1) {
+    throw new Error('Nama Arab harus minimal 1 kata')
   }
   if (!isArabic(nameArabic)) {
     throw new Error('Nama Arab harus hanya mengandung karakter Arab valid')
@@ -133,8 +133,8 @@ const validateArabicName = (nameArabic: string) => {
 }
 
 const validatePassport = (nationality: string, passportNumber?: string) => {
-  if (nationality && !passportNumber) {
-    throw new Error('Nomor paspor wajib diisi jika bukan WNI')
+  if (!passportNumber) {
+    throw new Error('Nomor paspor wajib diisi')
   }
 }
 
@@ -232,7 +232,7 @@ export const Registrants: CollectionConfig = {
       label: 'Nama Lengkap (Arab)',
       required: true,
       validate: (val: any) => {
-        if (!val || val.length < 3) return 'Nama Arab harus minimal 3 karakter'
+        if (!val || val.trim().split(/\s+/).length < 1) return 'Nama Arab harus minimal 1 kata'
         if (!isArabic(val)) return 'Nama Arab harus hanya mengandung karakter Arab valid'
         return true
       },
@@ -263,7 +263,7 @@ export const Registrants: CollectionConfig = {
       label: 'Kewarganegaraan',
       required: true,
     },
-    { type: 'text', name: 'passport_number', label: 'Nomor Paspor' },
+    { type: 'text', name: 'passport_number', label: 'Nomor Paspor', required: true },
     { type: 'text', name: 'phone_number', label: 'Nomor Telepon' },
     { type: 'text', name: 'whatsapp', label: 'Nomor WhatsApp', required: true },
     {

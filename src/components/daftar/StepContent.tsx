@@ -60,8 +60,6 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
     const major = form.getValues('major')
     const kulliyah = form.getValues('kulliyah')
     const syubah = form.getValues('syubah')
-    // Enumerated option lists (without sentinel OTHER)
-    const universityOptions = ['Al Azhar']
     const facultyOptions = [
       'USHULUDDIN',
       'SYARIAH_QANUN',
@@ -194,6 +192,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       form.setValue(fieldName, mediaId, { shouldValidate: false }) // Set the ID to the form field without validation
       if (fieldName === 'photo') setPhotoUploaded(true)
       else setSyahadahUploaded(true)
+      form.clearErrors(fieldName) // Clear any existing errors for this field
       toast.success(t('Messages.UploadSuccess'))
     } catch (error) {
       console.error('Upload error:', error)
@@ -361,10 +360,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 render={({ field }) => (
                   <FormItem className="transition-all duration-300 hover:scale-105">
                     <FormLabel className="text-[#3E2522] font-semibold">
-                      {form.watch('nationality')?.toLowerCase() !== 'indonesia' &&
-                      form.watch('nationality')?.toLowerCase() !== 'wni'
-                        ? t('Form.Labels.PassportNumberRequired')
-                        : t('Form.Labels.PassportNumber')}
+                      {t('Form.Labels.PassportNumberRequired')}
                     </FormLabel>
                     <FormControl>
                       <Input
