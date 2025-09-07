@@ -51,50 +51,42 @@ const useMultiStepForm = () => {
   // Mutation for submitting the form
   const submitMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      // Map data jika perlu (misalnya, convert numbers)
-      const payloadData = {
-        ...data,
-        first_enrollment_year: Number(data.first_enrollment_year),
-        graduation_year: Number(data.graduation_year),
-        // ... map lainnya sesuai Registrants.ts
-      }
-
-      const response = await fetch('/api/registrants', {
+      const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadData),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || t('Errors.SubmitFailed'))
+        throw new Error(errorData.error || 'Submit failed')
       }
 
-      return response.json()
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+      return result.data
     },
     onSuccess: (result) => {
-      alert(t('Messages.RegistrationSuccess', { id: result.id }))
+      if (result?.id) {
+        alert(t('Messages.RegistrationSuccess', { id: result.id }))
+      }
       form.reset() // Reset form setelah sukses
       setCurrentStep(0) // Kembali ke step pertama
     },
     onError: (error: any) => {
       console.error('Submit error:', error)
       // Handle different types of errors
-      if (error.response) {
-        // Server responded with error status
-        const errorData = error.response.data || {}
-        if (errorData.errors) {
-          Object.keys(errorData.errors).forEach((field: string) => {
-            form.setError(field as keyof FormData, {
-              message: errorData.errors[field].message || t('Errors.ServerError'),
-            })
+      if (error.details) {
+        // Payload validation errors
+        Object.keys(error.details).forEach((field: string) => {
+          form.setError(field as keyof FormData, {
+            message: error.details[field].message || t('Errors.ServerError'),
           })
-        } else {
-          form.setError('root', { message: errorData.message || t('Errors.SubmitFailed') })
-        }
+        })
       } else if (error.message) {
-        // Network or other error
-        form.setError('root', { message: t('Errors.NetworkError') + ' ' + error.message })
+        form.setError('root', { message: error.message })
       } else {
         form.setError('root', { message: t('Errors.UnknownError') })
       }

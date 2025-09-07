@@ -94,7 +94,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   globals: {};
   globalsSelect: {};
@@ -130,7 +130,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -154,7 +154,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt?: string | null;
   prefix?: string | null;
   updatedAt: string;
@@ -174,7 +174,7 @@ export interface Media {
  * via the `definition` "registrants".
  */
 export interface Registrant {
-  id: number;
+  id: string;
   registrant_type: 'SHOFI' | 'TASHFIYAH' | 'ATRIBUT';
   name: string;
   name_arabic: string;
@@ -223,14 +223,14 @@ export interface Registrant {
     | ('MUMTAZ_MMS' | 'MUMTAZ' | 'JAYYID_JIDDAN_MMS' | 'JAYYID_JIDDAN' | 'JAYYID' | 'MAQBUL' | 'RASIB' | 'DHAIF')
     | null;
   cumulative_score?: number | null;
-  syahadah_photo?: (number | null) | Syahadah;
+  syahadah_photo?: (string | null) | Syahadah;
   tashfiyah_ready_attend?: boolean | null;
   tashfiyah_ready_submit_proof?: boolean | null;
   tashfiyah_no_graduation_if_failed?: boolean | null;
   tashfiyah_still_get_attributes?: boolean | null;
   atribut_ready_attend?: boolean | null;
   attribute_package?: ('SELENDANG_PIN_MEDALI' | 'PLAKAT' | 'LENGKAP') | null;
-  photo: number | ProfilePhoto;
+  photo: string | ProfilePhoto;
   terms_agreement: boolean;
   /**
    * Otomatis di-generate berdasarkan ID database
@@ -239,7 +239,7 @@ export interface Registrant {
   /**
    * Otomatis di-generate setelah perubahan data
    */
-  confirmation_pdf?: (number | null) | ConfirmationPdf;
+  confirmation_pdf?: (string | null) | ConfirmationPdf;
   updatedAt: string;
   createdAt: string;
 }
@@ -248,8 +248,9 @@ export interface Registrant {
  * via the `definition` "syahadah".
  */
 export interface Syahadah {
-  id: number;
+  id: string;
   alt?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -267,8 +268,9 @@ export interface Syahadah {
  * via the `definition` "profile-photo".
  */
 export interface ProfilePhoto {
-  id: number;
+  id: string;
   alt?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -286,8 +288,9 @@ export interface ProfilePhoto {
  * via the `definition` "confirmation-pdf".
  */
 export interface ConfirmationPdf {
-  id: number;
+  id: string;
   alt?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -305,7 +308,7 @@ export interface ConfirmationPdf {
  * via the `definition` "google-tokens".
  */
 export interface GoogleToken {
-  id: number;
+  id: string;
   google_user_id: string;
   email: string;
   name: string;
@@ -330,14 +333,14 @@ export interface GoogleToken {
  * via the `definition` "google-sheets-creds".
  */
 export interface GoogleSheetsCred {
-  id: number;
+  id: string;
   title: string;
   spreadsheetId: string;
   spreadsheetUrl: string;
   lastRange?: string | null;
   lastUpdatedCells?: number | null;
   rowsSynced?: number | null;
-  createdBy?: (number | null) | User;
+  createdBy?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -346,44 +349,44 @@ export interface GoogleSheetsCred {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'registrants';
-        value: number | Registrant;
+        value: string | Registrant;
       } | null)
     | ({
         relationTo: 'google-tokens';
-        value: number | GoogleToken;
+        value: string | GoogleToken;
       } | null)
     | ({
         relationTo: 'google-sheets-creds';
-        value: number | GoogleSheetsCred;
+        value: string | GoogleSheetsCred;
       } | null)
     | ({
         relationTo: 'syahadah';
-        value: number | Syahadah;
+        value: string | Syahadah;
       } | null)
     | ({
         relationTo: 'profile-photo';
-        value: number | ProfilePhoto;
+        value: string | ProfilePhoto;
       } | null)
     | ({
         relationTo: 'confirmation-pdf';
-        value: number | ConfirmationPdf;
+        value: string | ConfirmationPdf;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -393,10 +396,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -416,7 +419,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -543,6 +546,7 @@ export interface GoogleSheetsCredsSelect<T extends boolean = true> {
  */
 export interface SyahadahSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -561,6 +565,7 @@ export interface SyahadahSelect<T extends boolean = true> {
  */
 export interface ProfilePhotoSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -579,6 +584,7 @@ export interface ProfilePhotoSelect<T extends boolean = true> {
  */
 export interface ConfirmationPdfSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

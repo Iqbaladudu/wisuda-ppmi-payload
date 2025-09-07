@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
-  const t = await getTranslations({ locale, namespace: 'IntroPage.Metadata' })
+// Next.js build error: expecting default PageProps, so drop custom param typing & let next-intl infer locale.
+export async function generateMetadata() {
+  const t = await getTranslations('IntroPage.Metadata')
   return {
     title: t('Title'),
     description: t('Description'),

@@ -41,22 +41,18 @@ export const formSchema = z
     registrant_type: z.enum(['SHOFI', 'TASHFIYAH', 'ATRIBUT']),
     name: z
       .string()
-      // i18n key: FormPage.Errors.NameRequired
-      .min(1, 'FormPage.Errors.NameRequired')
-      // i18n key: FormPage.Errors.NameMinWords
-      .refine((val) => val.trim().split(/\s+/).length >= 3, 'FormPage.Errors.NameMinWords'),
+      .min(1, 'Nama lengkap wajib diisi')
+      .refine((val) => val.trim().split(/\s+/).length >= 3, 'Nama lengkap harus minimal 3 kata'),
     name_arabic: z
       .string()
-      // i18n key: FormPage.Errors.NameArabicMin
-      .min(3, 'FormPage.Errors.NameArabicMin')
-      // i18n key: FormPage.Errors.NameArabicInvalid
-      .refine(isArabic, 'FormPage.Errors.NameArabicInvalid'),
+      .min(3, 'Nama Arab harus minimal 3 karakter')
+      .refine(isArabic, 'Nama Arab harus menggunakan karakter Arab yang valid'),
     gender: z.enum(['L', 'P']),
-    email: z.string().email('FormPage.Errors.EmailInvalid'),
-    nationality: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
+    email: z.string().email('Format email tidak valid'),
+    nationality: z.string().min(1, 'Kewarganegaraan wajib diisi'),
     passport_number: z.string().default(''),
     phone_number: z.string().optional(),
-    whatsapp: z.string().min(1, 'FormPage.Errors.WhatsAppRequired'),
+    whatsapp: z.string().min(1, 'Nomor WhatsApp wajib diisi'),
     kekeluargaan: z
       .enum([
         'KMM',
@@ -77,13 +73,13 @@ export const formSchema = z
         'FOSGAMA',
       ])
       .default('KMM'),
-    university: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
+    university: z.string().min(1, 'Universitas wajib diisi'),
     education_level: z.enum(['S1', 'S2', 'S3']),
     first_enrollment_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
     graduation_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
-    faculty: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
-    major: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
-    quran_memorization: z.number().min(0).max(30, 'FormPage.Errors.QuranMemorizationRange'),
+    faculty: z.string().min(1, 'Fakultas wajib diisi'),
+    major: z.string().min(1, 'Jurusan wajib diisi'),
+    quran_memorization: z.number().min(0).max(30, 'Hafalan Quran harus antara 0-30 juz'),
     continuing_study: z.enum(['YES', 'NO', 'UNDECIDED']).default('NO'),
     kulliyah: z.string().default('TIDAK ADA'),
     syubah: z.string().default('TIDAK ADA'),
@@ -104,7 +100,7 @@ export const formSchema = z
     cumulative_score: z
       .number()
       .min(0)
-      .max(100, 'FormPage.Errors.ScoreRange')
+      .max(100, 'Nilai akumulatif harus antara 0-100')
       .nullable()
       .default(null),
     syahadah_photo: z.string().default(''),
@@ -120,8 +116,7 @@ export const formSchema = z
     photo: z.string().default(''), // ID file setelah upload
     terms_agreement: z
       .boolean()
-      // i18n key: FormPage.Errors.TermsRequired
-      .refine((val) => val === true, 'FormPage.Errors.TermsRequired'),
+      .refine((val) => val === true, 'Anda harus menyetujui syarat dan ketentuan'),
   })
   .refine(
     (data) => {
@@ -134,7 +129,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.PassportRequired', path: ['passport_number'] },
+    { message: 'Nomor paspor wajib diisi untuk non-WNI', path: ['passport_number'] },
   )
   .refine(
     (data) => {
@@ -144,7 +139,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.WhatsAppRequired', path: ['whatsapp'] },
+    { message: 'Nomor WhatsApp harus sesuai dengan kode negara', path: ['whatsapp'] },
   )
   .refine(
     (data) => {
@@ -157,7 +152,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.ContinuingStudyRequired', path: ['continuing_study'] },
+    { message: 'Melanjutkan studi harus diisi untuk S1', path: ['continuing_study'] },
   )
   .refine(
     (data) => {
@@ -168,7 +163,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.ShofiRequired', path: ['shofi_ready_attend'] },
+    { message: 'Semua field Shofi wajib diisi', path: ['shofi_ready_attend'] },
   )
   .refine(
     (data) => {
@@ -180,7 +175,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.TashfiyahRequired', path: ['tashfiyah_ready_attend'] },
+    { message: 'Semua field Tashfiyah wajib diisi', path: ['tashfiyah_ready_attend'] },
   )
 
 export type FormData = z.infer<typeof formSchema>

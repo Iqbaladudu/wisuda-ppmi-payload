@@ -1,9 +1,7 @@
+import { createConfirmationMessage, sendWhatsAppMessage } from '@/lib/utils'
 import type { CollectionConfig } from 'payload'
 import { PDFDocument, StandardFonts, PDFFont } from 'pdf-lib'
-// fontkit diperlukan agar pdf-lib bisa embed custom Unicode fonts (Arab dll)
 import fontkit from '@pdf-lib/fontkit'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 
 // Reusable enums (mirroring Django TextChoices)
 const RegistrantType = [
@@ -205,215 +203,6 @@ const validateGeneral = (data: any) => {
 // Satuan koordinat pdf-lib: titik (origin kiri-bawah halaman).
 // Tips: buka PDF di editor (misal Acrobat / InkScape) untuk mengukur koordinat atau
 // pakai trial & error dengan mencetak grid.
-const confirmationFieldPlacements: Array<{
-  label: string
-  value: (d: any, generated: { regId: string }) => string
-  x: number
-  y: number
-  fontSize?: number
-  pageIndex?: number // default 0
-}> = [
-  {
-    label: 'Nomor Registrasi',
-    value: (_d, g) => g.regId,
-    x: 400,
-    y: 750,
-    fontSize: 12,
-  },
-  {
-    label: 'Tipe Pendaftar',
-    value: (d) => d.registrant_type || '',
-    x: 100,
-    y: 700,
-    fontSize: 11,
-  },
-  {
-    label: 'Nama Lengkap (Latin)',
-    value: (d) => d.name || '',
-    x: 100,
-    y: 680,
-  },
-  {
-    label: 'Nama Lengkap (Arab)',
-    value: (d) => d.name_arabic || '',
-    x: 100,
-    y: 660,
-  },
-  {
-    label: 'Jenis Kelamin',
-    value: (d) => (d.gender === 'L' ? 'Laki-laki' : d.gender === 'P' ? 'Perempuan' : ''),
-    x: 100,
-    y: 640,
-  },
-  {
-    label: 'Email',
-    value: (d) => d.email || '',
-    x: 100,
-    y: 620,
-  },
-  {
-    label: 'Kekeluargaan',
-    value: (d) => d.kekeluargaan || '',
-    x: 100,
-    y: 600,
-  },
-  {
-    label: 'Nomor Paspor',
-    value: (d) => d.passport_number || '-',
-    x: 400,
-    y: 600,
-  },
-  {
-    label: 'Universitas',
-    value: (d) => d.university || '',
-    x: 100,
-    y: 580,
-  },
-  {
-    label: 'Jenjang Pendidikan',
-    value: (d) => d.education_level || '',
-    x: 400,
-    y: 580,
-  },
-  {
-    label: 'Fakultas',
-    value: (d) => d.faculty || '',
-    x: 100,
-    y: 560,
-  },
-  {
-    label: 'Jurusan',
-    value: (d) => d.major || '',
-    x: 400,
-    y: 560,
-  },
-  {
-    label: 'Nomor WhatsApp',
-    value: (d) => d.whatsapp || '',
-    x: 100,
-    y: 540,
-  },
-]
-
-// Fungsi util untuk menghasilkan regId deterministik dari UUID (mirip logic afterRead)
-const generateRegId = (id: string) => `REG_${id.replace(/-/g, '').toUpperCase().slice(0, 8)}`
-
-// Function to generate and save confirmation PDF dengan menggambar teks di posisi koordinat
-const generateConfirmationPDF = async (data: any, providedPayload?: any) => {
-  const payload = providedPayload || (await getPayload({ config }))
-  try {
-    const baseId = data.id?.toString?.() || `${Date.now()}`
-    const regId = data.reg_id || generateRegId(baseId)
-
-    // 1. Ambil template PDF
-    const templateUrl = 'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/confirmation.pdf'
-    const response = await fetch(templateUrl)
-    if (!response.ok) throw new Error(`Failed to fetch PDF template: ${response.status}`)
-
-    const templateBytes = await response.arrayBuffer()
-    const pdfDoc = await PDFDocument.load(templateBytes)
-
-    // 2. Register fontkit & coba embed font Unicode (Arabic). Jika gagal -> fallback Helvetica
-    pdfDoc.registerFontkit(fontkit)
-    let font: PDFFont
-    let hasUnicodeFont = false
-    try {
-      const fontCandidates = [
-        {
-          label: 'Cairo-Regular',
-          url: 'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/Cairo-Bold.ttf',
-        },
-      ]
-      for (const fnt of fontCandidates) {
-        try {
-          const r = await fetch(fnt.url)
-          if (!r.ok) {
-            console.warn(`Font ${fnt.label} HTTP ${r.status}`)
-            continue
-          }
-          const bytes = await r.arrayBuffer()
-          font = await pdfDoc.embedFont(bytes, { subset: true })
-          hasUnicodeFont = true
-          console.log(`Embedded Arabic font: ${fnt.label}`)
-          break
-        } catch (err) {
-          console.warn(
-            `Failed embedding font ${fnt.label}:`,
-            err instanceof Error ? err.message : String(err),
-          )
-        }
-      }
-      if (!hasUnicodeFont) throw new Error('No Unicode font embedded')
-    } catch (err) {
-      console.warn(
-        'Falling back to Helvetica (Arabic text will be skipped):',
-        err instanceof Error ? err.message : String(err),
-      )
-      font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    }
-
-    // 3. Dapatkan halaman pertama (index 0). Jika butuh banyak halaman, akses sesuai pageIndex.
-    const pages = pdfDoc.getPages()
-    if (!pages.length) throw new Error('Template PDF tidak memiliki halaman')
-
-    // 4. Gambar semua field berdasarkan mapping koordinat
-    confirmationFieldPlacements.forEach((f) => {
-      const page = pages[f.pageIndex ?? 0]
-      if (!page) return
-      const value = f.value(data, { regId })
-      // Skip jika kosong supaya tidak mengotori PDF
-      if (value == null || value === '') return
-      try {
-        // Jika tidak ada unicode font & value mengandung karakter Arab, skip
-        if (!hasUnicodeFont && /[\u0600-\u06FF]/.test(value)) {
-          console.warn(`Skipping Arabic field "${f.label}" due to missing Unicode font.`)
-          return
-        }
-
-        // Sederhana: deteksi teks Arab untuk optional right-alignment
-        const isArabicText = /[\u0600-\u06FF]/.test(value)
-        const textToDraw = value
-        // Jika butuh perataan kanan: bisa geser x berdasarkan width (belum dihitung disini)
-        page.drawText(textToDraw, {
-          x: f.x,
-          y: f.y,
-          size: f.fontSize || 10,
-          font,
-        })
-      } catch (drawError) {
-        console.warn(
-          `Cannot draw field "${f.label}" with value "${value}": ${drawError instanceof Error ? drawError.message : String(drawError)}`,
-        )
-        // Jika gagal (misal encoding), skip field ini
-      }
-    })
-
-    // 5. Simpan PDF baru
-    const pdfBytes = await pdfDoc.save()
-    const pdfBuffer = Buffer.from(pdfBytes)
-    const fileName = `confirmation_${regId}.pdf`
-
-    // 6. Upload ke collection confirmation-pdf
-    const uploadedFile = await payload.create({
-      collection: 'confirmation-pdf',
-      data: {
-        alt: `Confirmation PDF for ${data.name || ''}`.trim(),
-      },
-      file: {
-        data: pdfBuffer,
-        name: fileName,
-        mimetype: 'application/pdf',
-        size: pdfBuffer.length,
-      },
-    })
-
-    console.log(`Confirmation PDF generated for ${data.name}: ${uploadedFile.id}`)
-    return uploadedFile.id
-  } catch (error) {
-    console.error('Error generating confirmation PDF:', error)
-    throw error
-  }
-}
 
 export const Registrants: CollectionConfig = {
   slug: 'registrants',
@@ -687,77 +476,235 @@ export const Registrants: CollectionConfig = {
   // Schema-level guards to mirror Django clean()
   hooks: {
     afterChange: [
-      async ({ data, operation, req }) => {
-        // Send WhatsApp on both create and update operations
-        if ((operation === 'create' || operation === 'update') && data.whatsapp) {
-          try {
-            // Generate confirmation PDF
-            try {
-              console.log(data)
-              const pdfId = await generateConfirmationPDF(data, req.payload)
+      async ({ operation, req, doc, previousDoc }) => {
+        // Guard agar tidak loop saat internal update men-set confirmation_pdf
+        if (req?.context?.skipPdf) {
+          return doc
+        }
 
-              // Update the registrant with the PDF reference
-              if (pdfId) {
+        if (operation === 'create' || operation === 'update') {
+          console.log(`After ${operation} hook for registrant ${doc.name}`)
+
+          // Tentukan apakah perlu regenerate PDF
+          const pdfRelevantFields = [
+            'registrant_type',
+            'name',
+            'name_arabic',
+            'gender',
+            'email',
+            'kekeluargaan',
+            'passport_number',
+            'university',
+            'education_level',
+            'faculty',
+            'major',
+            'whatsapp',
+          ]
+
+          // Jika update: cek perubahan field relevan
+          if (
+            operation === 'update' &&
+            doc.confirmation_pdf && // sudah ada pdf sebelumnya
+            previousDoc &&
+            !pdfRelevantFields.some((f) => previousDoc[f] !== doc[f])
+          ) {
+            console.log('No PDF-relevant changes detected. Skipping PDF regeneration.')
+          } else {
+            try {
+              const payload = req.payload
+              const baseId = doc.id?.toString?.() || `${Date.now()}`
+              const regId =
+                doc.reg_id || `REG_${baseId.replace(/-/g, '').toUpperCase().slice(0, 8)}`
+
+              // 1. Ambil template PDF
+              const templateUrl =
+                'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/confirmation_form.pdf'
+              const response = await fetch(templateUrl)
+              if (!response.ok) throw new Error(`Failed to fetch PDF template: ${response.status}`)
+
+              const templateBytes = await response.arrayBuffer()
+              const pdfDoc = await PDFDocument.load(templateBytes)
+
+              // 2. Font embedding
+              pdfDoc.registerFontkit(fontkit)
+              let font: PDFFont
+              let hasUnicodeFont = false
+              try {
+                const fontCandidates = [
+                  {
+                    label: 'Cairo-Regular',
+                    url: 'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/Cairo-Bold.ttf',
+                  },
+                ]
+                for (const fnt of fontCandidates) {
+                  try {
+                    const r = await fetch(fnt.url)
+                    if (!r.ok) {
+                      console.warn(`Font ${fnt.label} HTTP ${r.status}`)
+                      continue
+                    }
+                    const bytes = await r.arrayBuffer()
+                    font = await pdfDoc.embedFont(bytes, { subset: true })
+                    hasUnicodeFont = true
+                    console.log(`Embedded Arabic font: ${fnt.label}`)
+                    break
+                  } catch (err) {
+                    console.warn(
+                      `Failed embedding font ${fnt.label}:`,
+                      err instanceof Error ? err.message : String(err),
+                    )
+                  }
+                }
+                if (!hasUnicodeFont) throw new Error('No Unicode font embedded')
+              } catch (err) {
+                console.warn(
+                  'Falling back to Helvetica (Arabic text will be skipped):',
+                  err instanceof Error ? err.message : String(err),
+                )
+                font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+              }
+
+              // 3. Halaman
+              const pages = pdfDoc.getPages()
+              if (!pages.length) throw new Error('Template PDF tidak memiliki halaman')
+
+              // 4. Field placement
+              const confirmationFieldPlacements: Array<{
+                label: string
+                value: (d: any, generated: { regId: string }) => string
+                x: number
+                y: number
+                fontSize?: number
+                pageIndex?: number
+              }> = [
+                {
+                  label: 'Nomor Registrasi',
+                  value: (_d, g) => g.regId,
+                  x: 200,
+                  y: 548,
+                  fontSize: 12,
+                },
+                {
+                  label: 'Tipe Pendaftar',
+                  value: (d) => d.registrant_type || '',
+                  x: 200,
+                  y: 523,
+                  fontSize: 12,
+                },
+                { label: 'Nama Lengkap (Latin)', value: (d) => d.name || '', x: 250, y: 477 },
+                { label: 'Nama Lengkap (Arab)', value: (d) => d.name_arabic || '', x: 250, y: 455 },
+                {
+                  label: 'Jenis Kelamin',
+                  value: (d) =>
+                    d.gender === 'L' ? 'Laki-laki' : d.gender === 'P' ? 'Perempuan' : '',
+                  x: 250,
+                  y: 433,
+                },
+                { label: 'Email', value: (d) => d.email || '', x: 250, y: 411 },
+                { label: 'Kekeluargaan', value: (d) => d.kekeluargaan || '', x: 250, y: 389 },
+                { label: 'Nomor Paspor', value: (d) => d.passport_number || '-', x: 250, y: 367 },
+                { label: 'Universitas', value: (d) => d.university || '', x: 250, y: 345 },
+                {
+                  label: 'Jenjang Pendidikan',
+                  value: (d) => d.education_level || '',
+                  x: 250,
+                  y: 323,
+                },
+                { label: 'Fakultas', value: (d) => d.faculty || '', x: 250, y: 301 },
+                { label: 'Jurusan', value: (d) => d.major || '', x: 250, y: 279 },
+                { label: 'Nomor WhatsApp', value: (d) => d.whatsapp || '', x: 250, y: 257 },
+              ]
+              // Scale factor (ubah jika ingin menskalakan ulang koordinat & ukuran font)
+              const SCALE = 1 // saat ini 1 = tidak mengubah apapun
+
+              confirmationFieldPlacements.forEach((f) => {
+                const page = pages[f.pageIndex ?? 0]
+                if (!page) return
+                const value = f.value(doc, { regId })
+                if (!value) return
+                try {
+                  if (!hasUnicodeFont && /[\u0600-\u06FF]/.test(value)) {
+                    console.warn(`Skipping Arabic field "${f.label}" (no unicode font).`)
+                    return
+                  }
+                  // Terapkan scaling pada koordinat & font size (SCALE=1 => identik)
+                  page.drawText(value, {
+                    x: f.x * SCALE,
+                    y: f.y * SCALE,
+                    size: (f.fontSize || 10) * SCALE,
+                    font,
+                  })
+                } catch (e) {
+                  console.warn(
+                    `Cannot draw field "${f.label}": ${e instanceof Error ? e.message : String(e)}`,
+                  )
+                }
+              })
+
+              // 5. Simpan
+              const pdfBytes = await pdfDoc.save()
+              const pdfBuffer = Buffer.from(pdfBytes)
+              const fileName = `confirmation_${regId}.pdf`
+
+              console.log(`Generated confirmation PDF for ${doc.name} (${regId})`)
+
+              // 6. Upload file
+              const uploadedFile = await payload.create({
+                collection: 'confirmation-pdf',
+                data: {
+                  alt: `Confirmation PDF for ${doc.name || ''}`.trim(),
+                },
+                file: {
+                  data: pdfBuffer,
+                  name: fileName,
+                  mimetype: 'application/pdf',
+                  size: pdfBuffer.length,
+                },
+                context: { skipPdf: true }, // jangan sampai create file trigger logika lain (aman)
+              })
+
+              const pdfId = uploadedFile.id
+              console.log(`Confirmation PDF stored: ${pdfId}`)
+
+              if (pdfId && doc.confirmation_pdf !== pdfId) {
                 await req.payload.update({
                   collection: 'registrants',
-                  id: data.id,
-                  data: {
-                    confirmation_pdf: pdfId,
-                  },
+                  id: doc.id,
+                  data: { confirmation_pdf: pdfId },
+                  context: { skipPdf: true }, // HINDARI regenerasi
+                  depth: 0,
                 })
               }
             } catch (error) {
               console.error('Error in PDF generation:', error)
             }
+          }
 
-            // Format phone number for WhatsApp API
-            const phoneNumber = data.whatsapp.replace('+', '') + '@s.whatsapp.net'
-
-            // Create message based on operation type
-            let confirmationMessage = ''
-            if (operation === 'create') {
-              confirmationMessage = `Assalamu'alaikum ${data.name},\n\nSelamat! Pendaftaran wisuda PPMI Anda telah dikonfirmasi.\n\nDetail Pendaftaran:\n- Nama: ${data.name}\n- Tipe: ${data.registrant_type}\n- Universitas: ${data.university}\n- ID Pendaftaran: ${data.reg_id}\n\nSilakan hadir sesuai jadwal yang akan diinformasikan selanjutnya.\n\nBarakallahu feekum.`
-            } else if (operation === 'update') {
-              confirmationMessage = `Assalamu'alaikum ${data.name},\n\nData pendaftaran wisuda PPMI Anda telah diperbarui.\n\nDetail Terbaru:\n- Nama: ${data.name}\n- Tipe: ${data.registrant_type}\n- Universitas: ${data.university}\n- ID Pendaftaran: ${data.reg_id}\n\nJika ada perubahan penting, kami akan menginformasikan lebih lanjut.\n\nBarakallahu feekum.`
-            }
-
-            // Get WhatsApp API credentials from environment variables
+          // Kirim WhatsApp (opsional: bisa juga diberi guard supaya tidak dobel)
+          try {
+            const phoneNumber = doc.whatsapp.replace('+', '') + '@s.whatsapp.net'
+            const confirmationMessage = createConfirmationMessage(doc, operation)
             const whatsappApiUrl = process.env.WHATSAPP_API_URL
             const whatsappUser = process.env.WHATSAPP_API_USER
             const whatsappPassword = process.env.WHATSAPP_API_PASSWORD
-
             if (whatsappApiUrl && whatsappUser && whatsappPassword) {
-              // Create base64 encoded credentials
-              const credentials = Buffer.from(`${whatsappUser}:${whatsappPassword}`).toString(
-                'base64',
+              await sendWhatsAppMessage(
+                phoneNumber,
+                confirmationMessage,
+                whatsappApiUrl,
+                whatsappUser,
+                whatsappPassword,
+                doc.name,
               )
-
-              // Call external WhatsApp API
-              const response = await fetch(`${whatsappApiUrl}/send/message`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Basic ${credentials}`,
-                },
-                body: JSON.stringify({
-                  phone: phoneNumber,
-                  message: confirmationMessage,
-                  is_forwarded: false,
-                  duration: 3600,
-                }),
-              })
-
-              if (response.ok) {
-                console.log(`WhatsApp confirmation sent to ${data.name} (${phoneNumber})`)
-              } else {
-                console.error(`Failed to send WhatsApp to ${data.name}:`, response.status)
-              }
+              console.log(`WhatsApp confirmation sent to ${doc.name} (${phoneNumber})`)
             } else {
               console.warn('WhatsApp API credentials not configured')
             }
-          } catch (error) {
-            console.error('Error sending WhatsApp confirmation:', error)
+          } catch (err) {
+            console.error('Error sending WhatsApp confirmation:', err)
           }
+
+          return doc
         }
       },
     ],
