@@ -83,7 +83,8 @@
         "TashfiyahStillGetAttributes": "Fail = Still receive attributes",
         "AtributReadyAttend": "Ready to attend",
         "AttributePackage": "Attribute Package",
-        "Photo": "Profile Photo *"
+        "Photo": "Profile Photo *",
+        "TermsAgreement": "Terms & Conditions *"
       },
       "Placeholders": {
         "Name": "Example: Ahmad Abdullah Rahman",
@@ -232,12 +233,14 @@
       "PhotoRequired": "Profile photo must be uploaded",
       "SyahadahPhotoRequired": "Certificate photo must be uploaded",
       "UniversityRequired": "University is required",
-      "FacultyRequired": "Faculty is required", 
+      "FacultyRequired": "Faculty is required",
       "MajorRequired": "Major is required",
       "SubmitFailed": "Submit failed",
       "ServerError": "Server error",
       "NetworkError": "Network error:",
-      "UnknownError": "Unknown error occurred"
+      "UnknownError": "Unknown error occurred",
+      "InvalidFileType": "Invalid file type. Please upload an image.",
+      "FileTooLarge": "File is too large. Maximum size is 2MB."
     },
     "Common": {
       "Yes": "Yes",

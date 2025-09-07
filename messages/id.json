@@ -95,7 +95,8 @@
         "TashfiyahStillGetAttributes": "Tidak lulus = tetap dapat atribut",
         "AtributReadyAttend": "Siap hadir",
         "AttributePackage": "Paket Atribut",
-        "Photo": "Foto Diri *"
+        "Photo": "Foto Diri *",
+        "TermsAgreement": "Syarat & Ketentuan *"
       },
       "Placeholders": {
         "Name": "Contoh: Ahmad Abdullah Rahman",
@@ -260,7 +261,9 @@
       "SubmitFailed": "Submit gagal",
       "ServerError": "Error dari server",
       "NetworkError": "Error jaringan:",
-      "UnknownError": "Terjadi kesalahan tidak dikenal"
+      "UnknownError": "Terjadi kesalahan tidak dikenal",
+      "InvalidFileType": "Tipe file tidak valid. Harap unggah gambar.",
+      "FileTooLarge": "File terlalu besar. Ukuran maksimal adalah 2MB."
     },
     "Common": {
       "Yes": "Ya",

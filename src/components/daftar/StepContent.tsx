@@ -161,7 +161,9 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       const formData = new FormData()
       formData.append('file', file)
 
-      const uploadResponse = await fetch('/api/media', {
+      const endpoint = fieldName === 'photo' ? '/api/profile-photo' : '/api/syahadah'
+
+      const uploadResponse = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       })
@@ -175,7 +177,8 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       const mediaId = uploadResult.doc.id
 
       // Then, update the alt field
-      const updateResponse = await fetch(`/api/media/${mediaId}`, {
+      const updateEndpoint = fieldName === 'photo' ? '/api/profile-photo' : '/api/syahadah'
+      const updateResponse = await fetch(`${updateEndpoint}/${mediaId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -839,6 +842,15 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                       onChange={(e) => {
                         const file = e.target.files?.[0]
                         if (file) {
+                          if (!file.type.startsWith('image/')) {
+                            toast.error(t('Errors.InvalidFileType'))
+                            return
+                          }
+                          if (file.size > 2 * 1024 * 1024) {
+                            // 2MB limit
+                            toast.error(t('Errors.FileTooLarge'))
+                            return
+                          }
                           uploadFile(file, 'syahadah_photo')
                         }
                       }}
@@ -1191,6 +1203,15 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                   onChange={(e) => {
                     const file = e.target.files?.[0]
                     if (file) {
+                      if (!file.type.startsWith('image/')) {
+                        toast.error(t('Errors.InvalidFileType'))
+                        return
+                      }
+                      if (file.size > 2 * 1024 * 1024) {
+                        // 2MB limit
+                        toast.error(t('Errors.FileTooLarge'))
+                        return
+                      }
                       uploadFile(file, 'photo')
                     }
                   }}

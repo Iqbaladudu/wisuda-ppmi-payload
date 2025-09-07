@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { formSchema, FormData, steps } from '../constants/constants'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 const useMultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(0)
@@ -90,7 +91,7 @@ const useMultiStepForm = () => {
     },
     onSuccess: (result) => {
       if (result?.id) {
-        alert(t('Messages.RegistrationSuccess', { id: result.id }))
+        toast.success(t('Messages.RegistrationSuccess', { id: result.id }))
       }
       form.reset() // Reset form setelah sukses
       setCurrentStep(0) // Kembali ke step pertama
