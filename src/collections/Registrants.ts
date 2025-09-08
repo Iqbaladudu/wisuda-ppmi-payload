@@ -513,7 +513,7 @@ export const Registrants: CollectionConfig = {
 
               // 1. Ambil template PDF
               const templateUrl =
-                'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/confirmation_form.pdf'
+                'https://pub-0ccce103f38e4902912534cdb3973783.r2.dev/confirmation_fix.pdf'
               const response = await fetch(templateUrl)
               if (!response.ok) throw new Error(`Failed to fetch PDF template: ${response.status}`)
 
@@ -563,78 +563,47 @@ export const Registrants: CollectionConfig = {
               const pages = pdfDoc.getPages()
               if (!pages.length) throw new Error('Template PDF tidak memiliki halaman')
 
-              // 4. Field placement
-              const confirmationFieldPlacements: Array<{
-                label: string
-                value: (d: any, generated: { regId: string }) => string
-                x: number
-                y: number
-                fontSize?: number
-                pageIndex?: number
-              }> = [
-                {
-                  label: 'Nomor Registrasi',
-                  value: (_d, g) => g.regId,
-                  x: 200,
-                  y: 548,
-                  fontSize: 12,
-                },
-                {
-                  label: 'Tipe Pendaftar',
-                  value: (d) => d.registrant_type || '',
-                  x: 200,
-                  y: 523,
-                  fontSize: 12,
-                },
-                { label: 'Nama Lengkap (Latin)', value: (d) => d.name || '', x: 250, y: 477 },
-                { label: 'Nama Lengkap (Arab)', value: (d) => d.name_arabic || '', x: 250, y: 455 },
-                {
-                  label: 'Jenis Kelamin',
-                  value: (d) =>
-                    d.gender === 'L' ? 'Laki-laki' : d.gender === 'P' ? 'Perempuan' : '',
-                  x: 250,
-                  y: 433,
-                },
-                { label: 'Email', value: (d) => d.email || '', x: 250, y: 411 },
-                { label: 'Kekeluargaan', value: (d) => d.kekeluargaan || '', x: 250, y: 389 },
-                { label: 'Nomor Paspor', value: (d) => d.passport_number || '-', x: 250, y: 367 },
-                { label: 'Universitas', value: (d) => d.university || '', x: 250, y: 345 },
-                {
-                  label: 'Jenjang Pendidikan',
-                  value: (d) => d.education_level || '',
-                  x: 250,
-                  y: 323,
-                },
-                { label: 'Fakultas', value: (d) => d.faculty || '', x: 250, y: 301 },
-                { label: 'Jurusan', value: (d) => d.major || '', x: 250, y: 279 },
-                { label: 'Nomor WhatsApp', value: (d) => d.whatsapp || '', x: 250, y: 257 },
-              ]
-              // Scale factor (ubah jika ingin menskalakan ulang koordinat & ukuran font)
-              const SCALE = 1 // saat ini 1 = tidak mengubah apapun
+              // 4. Fill PDF AcroForm
+              const form = pdfDoc.getForm()
 
-              confirmationFieldPlacements.forEach((f) => {
-                const page = pages[f.pageIndex ?? 0]
-                if (!page) return
-                const value = f.value(doc, { regId })
-                if (!value) return
+              const dataToFill = {
+                reg_id: regId,
+                registrant_type: doc.registrant_type || '',
+                name: doc.name || '',
+                name_arabic: doc.name_arabic || '',
+                gender: doc.gender === 'L' ? 'Laki-laki' : doc.gender === 'P' ? 'Perempuan' : '',
+                email: doc.email || '',
+                kekeluargaan: doc.kekeluargaan || '',
+                passport_number: doc.passport_number || '-',
+                university: doc.university || '',
+                education_level: doc.education_level || '',
+                faculty: doc.faculty || '',
+                major: doc.major || '',
+                whatsapp: doc.whatsapp || '',
+                phone_number: doc.phone_number || '',
+              }
+
+              for (const [fieldName, value] of Object.entries(dataToFill)) {
                 try {
-                  if (!hasUnicodeFont && /[\u0600-\u06FF]/.test(value)) {
-                    console.warn(`Skipping Arabic field "${f.label}" (no unicode font).`)
-                    return
+                  const field = form.getTextField(fieldName)
+                  field.setText(String(value))
+
+                  // If a special font is loaded for unicode and the value contains unicode,
+                  // we need to update the field's appearance stream.
+                  if (hasUnicodeFont && font && /[^ -]/.test(String(value))) {
+                    field.updateAppearances(font)
                   }
-                  // Terapkan scaling pada koordinat & font size (SCALE=1 => identik)
-                  page.drawText(value, {
-                    x: f.x * SCALE,
-                    y: f.y * SCALE,
-                    size: (f.fontSize || 10) * SCALE,
-                    font,
-                  })
                 } catch (e) {
                   console.warn(
-                    `Cannot draw field "${f.label}": ${e instanceof Error ? e.message : String(e)}`,
+                    `Could not fill form field "${fieldName}": ${
+                      e instanceof Error ? e.message : String(e)
+                    }`,
                   )
                 }
-              })
+              }
+
+              // Flatten the form to make it non-editable
+              form.flatten()
 
               // 5. Simpan
               const pdfBytes = await pdfDoc.save()

@@ -30,6 +30,11 @@
     },
     "Warning": "Data yang tidak valid dapat menyebabkan penolakan atau penundaan verifikasi."
   },
+  "SuccessPage": {
+    "Heading": "Pendaftaran Berhasil!",
+    "Description": "Terima kasih telah mendaftar. Data Anda telah kami terima.",
+    "HomeButton": "Kembali ke Beranda"
+  },
   "Navbar": {
     "joinNow": "Bergabung Sekarang"
   },

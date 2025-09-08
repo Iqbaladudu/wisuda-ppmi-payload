@@ -9,8 +9,13 @@ import { toast } from 'sonner'
 const useMultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const [isValidating, setIsValidating] = useState(false)
+  // New success state to allow UI to switch to a success screen
+  const [isSuccess, setIsSuccess] = useState(false)
+  // Store last successful registration ID (reg_id if available, fallback to raw id)
+  const [lastRegId, setLastRegId] = useState<string | null>(null)
 
   const t = useTranslations('FormPage')
+  // Reverted to single generic to align with FormProvider expected signature
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -76,8 +81,14 @@ const useMultiStepForm = () => {
       if (result?.id) {
         toast.success(t('Messages.RegistrationSuccess', { id: result.id }))
       }
+      // Capture registration identifier (prefer reg_id if the API returns it)
+      if (result?.reg_id || result?.id) {
+        setLastRegId(result.reg_id || result.id)
+      }
+      // Mark success so the consumer component can render a success view
+      setIsSuccess(true)
       form.reset() // Reset form setelah sukses
-      setCurrentStep(0) // Kembali ke step pertama
+      setCurrentStep(0) // Kembali ke step pertama (we keep step reset for when user re-enters)
     },
     onError: (error: any) => {
       console.error('Submit error:', error)
@@ -211,9 +222,18 @@ const useMultiStepForm = () => {
     currentStep,
     isValidating,
     isSubmitting: submitMutation.isPending,
+    isSuccess,
+    lastRegId,
     nextStep,
     prevStep,
     onSubmit,
+    // Allow UI to go back to the fresh form from success screen
+    resetSuccess: () => {
+      setIsSuccess(false)
+      setLastRegId(null)
+      form.reset()
+      setCurrentStep(0)
+    },
   }
 }
 

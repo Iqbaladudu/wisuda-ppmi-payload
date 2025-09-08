@@ -34,6 +34,11 @@
     },
     "Warning": "Invalid data may result in rejection or delayed verification."
   },
+  "SuccessPage": {
+    "Heading": "Registration Successful!",
+    "Description": "Thank you for registering. We have received your data.",
+    "HomeButton": "Back to Home"
+  },
   "Navbar": {
     "joinNow": "Join Now"
   },
