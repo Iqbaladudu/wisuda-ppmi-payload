@@ -12,7 +12,7 @@ const useMultiStepForm = () => {
 
   const t = useTranslations('FormPage')
   const form = useForm<FormData>({
-    // resolver: zodResolver(formSchema), // Using manual validation instead
+    resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
       registrant_type: 'SHOFI' as const,
@@ -50,24 +50,7 @@ const useMultiStepForm = () => {
     },
   })
 
-  // Validation onChange
-  useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-      if (name && type === 'change') {
-        // Validate the specific field using Zod
-        const fieldSchema = formSchema.shape[name as keyof typeof formSchema.shape]
-        if (fieldSchema) {
-          const result = fieldSchema.safeParse(value[name])
-          if (!result.success) {
-            form.setError(name as keyof FormData, { message: result.error.issues[0].message })
-          } else {
-            form.clearErrors(name as keyof FormData)
-          }
-        }
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [form])
+  // Per-field validation now handled automatically by zodResolver (manual watcher removed)
 
   // Mutation for submitting the form
   const submitMutation = useMutation({
@@ -103,13 +86,13 @@ const useMultiStepForm = () => {
         // Payload validation errors
         Object.keys(error.details).forEach((field: string) => {
           form.setError(field as keyof FormData, {
-            message: error.details[field].message || t('Errors.ServerError'),
+            message: error.details[field].message || 'Errors.ServerError',
           })
         })
       } else if (error.message) {
         form.setError('root', { message: error.message })
       } else {
-        form.setError('root', { message: t('Errors.UnknownError') })
+        form.setError('root', { message: 'Errors.UnknownError' })
       }
     },
     onSettled: () => {
@@ -151,85 +134,48 @@ const useMultiStepForm = () => {
   const nextStep = async () => {
     setIsValidating(true)
     const fieldsToValidate = getStepFields(currentStep)
+
     if (fieldsToValidate.length === 0) {
-      // Clear all errors when moving to next step
       form.clearErrors()
       setCurrentStep((prev) => prev + 1)
       setIsValidating(false)
       return
     }
 
-    const currentValues = form.getValues()
+    // Exclude upload-only fields from resolver trigger
+    const schemaFields = fieldsToValidate.filter((f) => !['photo', 'syahadah_photo'].includes(f))
 
-    // Clear errors for current step fields first
-    fieldsToValidate.forEach((field) => {
-      form.clearErrors(field)
-    })
+    // Trigger validation via resolver (focus first invalid field automatically)
+    const valid = await form.trigger(schemaFields as any, { shouldFocus: true })
 
-    // Manual validation for photo field in step 3
-    if (currentStep === 3 && (!currentValues.photo || currentValues.photo === '')) {
-      form.setError('photo', { message: t('Errors.PhotoRequired') })
-      setIsValidating(false)
-      return
+    const values = form.getValues()
+
+    // Manual validations (not covered by schema)
+    if (currentStep === 3 && (!values.photo || values.photo === '')) {
+      form.setError('photo', { message: 'Errors.PhotoRequired' })
     }
-
-    // Manual validation for terms_agreement in step 3
-    if (currentStep === 3 && !currentValues.terms_agreement) {
-      form.setError('terms_agreement', { message: t('Errors.TermsRequired') })
-      setIsValidating(false)
-      return
+    if (currentStep === 3 && !values.terms_agreement) {
+      form.setError('terms_agreement', { message: 'Errors.TermsRequired' })
     }
-
-    // Manual validation for syahadah_photo in step 2 if SHOFI
     if (
       currentStep === 2 &&
-      currentValues.registrant_type === 'SHOFI' &&
-      (!currentValues.syahadah_photo || currentValues.syahadah_photo === '')
+      values.registrant_type === 'SHOFI' &&
+      (!values.syahadah_photo || values.syahadah_photo === '')
     ) {
-      form.setError('syahadah_photo', { message: t('Errors.SyahadahPhotoRequired') })
-      setIsValidating(false)
-      return
+      form.setError('syahadah_photo', { message: 'Errors.SyahadahPhotoRequired' })
     }
 
-    // Create a modified schema that excludes upload fields from validation
-    const fieldsToSkip = ['photo', 'syahadah_photo']
-    const filteredFields = fieldsToValidate.filter((field) => !fieldsToSkip.includes(field))
+    const hasSchemaErrors = schemaFields.some((f) => form.formState.errors[f as keyof FormData])
+    const hasManualErrors =
+      (currentStep === 3 && (!values.photo || values.photo === '' || !values.terms_agreement)) ||
+      (currentStep === 2 &&
+        values.registrant_type === 'SHOFI' &&
+        (!values.syahadah_photo || values.syahadah_photo === ''))
 
-    if (filteredFields.length === 0) {
-      // Only upload fields, skip schema validation
+    if (!hasSchemaErrors && !hasManualErrors && valid) {
       setCurrentStep((prev) => prev + 1)
-      setIsValidating(false)
-      return
     }
 
-    // Validate only non-upload fields
-    const partialSchema = formSchema.pick(
-      Object.fromEntries(filteredFields.map((field) => [field, true])),
-    )
-    const result = partialSchema.safeParse(currentValues)
-
-    if (result.success) {
-      // Clear errors for current step fields before proceeding
-      fieldsToValidate.forEach((field) => {
-        form.clearErrors(field)
-      })
-      setCurrentStep((prev) => prev + 1)
-    } else {
-      // Set errors only for fields in current step
-      result.error.issues.forEach((err: any) => {
-        const fieldName = err.path[0] as keyof FormData
-        if (filteredFields.includes(fieldName)) {
-          form.setError(fieldName, { message: err.message })
-        }
-      })
-      // If no errors in current step fields, proceed
-      const hasCurrentStepErrors = result.error.issues.some((err: any) =>
-        filteredFields.includes(err.path[0] as keyof FormData),
-      )
-      if (!hasCurrentStepErrors) {
-        setCurrentStep((prev) => prev + 1)
-      }
-    }
     setIsValidating(false)
   }
 
@@ -238,47 +184,25 @@ const useMultiStepForm = () => {
   }
 
   const onSubmit = async (data: FormData) => {
-    // Clear any existing errors before validation
+    // Bersihkan error sebelumnya
     form.clearErrors()
 
-    // Validate entire form before submitting
-    const result = formSchema.safeParse(data)
-    if (!result.success) {
-      // Filter out errors for upload fields that are handled separately
-      const uploadFields = ['photo', 'syahadah_photo']
-      const filteredErrors = result.error.issues.filter(
-        (err: any) => !uploadFields.includes(err.path[0]),
-      )
+    // Jalankan validasi penuh via zodResolver
+    const valid = await form.trigger(undefined, { shouldFocus: true })
+    if (!valid) return
 
-      // Set errors for non-upload fields
-      filteredErrors.forEach((err: any) => {
-        const fieldName = err.path[0] as keyof FormData
-        form.setError(fieldName, { message: err.message })
-      })
-
-      // Check upload fields manually
-      if (!data.photo || data.photo === '') {
-        form.setError('photo', { message: t('Errors.PhotoRequired') })
-      }
-      if (
-        data.registrant_type === 'SHOFI' &&
-        (!data.syahadah_photo || data.syahadah_photo === '')
-      ) {
-        form.setError('syahadah_photo', { message: t('Errors.SyahadahPhotoRequired') })
-      }
-
-      // If there are any errors, don't submit
-      if (
-        filteredErrors.length > 0 ||
-        !data.photo ||
-        data.photo === '' ||
-        (data.registrant_type === 'SHOFI' && (!data.syahadah_photo || data.syahadah_photo === ''))
-      ) {
-        return
-      }
+    // Validasi manual untuk field upload (tidak di-handle oleh schema)
+    if (!data.photo || data.photo === '') {
+      form.setError('photo', { message: 'Errors.PhotoRequired' })
+    }
+    if (data.registrant_type === 'SHOFI' && (!data.syahadah_photo || data.syahadah_photo === '')) {
+      form.setError('syahadah_photo', { message: 'Errors.SyahadahPhotoRequired' })
     }
 
-    // Trigger mutation
+    // Kalau masih ada error upload, hentikan
+    if (form.formState.errors.photo || form.formState.errors.syahadah_photo) return
+
+    // Submit
     submitMutation.mutate(data)
   }
 

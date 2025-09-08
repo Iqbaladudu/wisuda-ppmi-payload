@@ -140,9 +140,7 @@ const MultiStepForm: React.FC = () => {
                             .filter(([field]) => getCurrentStepFields(currentStep).includes(field))
                             .slice(0, 4)
                             .map(([field, error]) => (
-                              <div key={field}>
-                                • {field}: {error?.message || 'Invalid'}
-                              </div>
+                              <div key={field}>• {t(error?.message as any) || 'Invalid'}</div>
                             ))}
                         </div>
                       )}
@@ -179,9 +177,7 @@ const MultiStepForm: React.FC = () => {
                             .filter(([field]) => getCurrentStepFields(currentStep).includes(field))
                             .slice(0, 4)
                             .map(([field, error]) => (
-                              <div key={field}>
-                                • {field}: {error?.message || 'Invalid'}
-                              </div>
+                              <div key={field}>• {t(error?.message as any) || 'Invalid'}</div>
                             ))}
                         </div>
                       )}

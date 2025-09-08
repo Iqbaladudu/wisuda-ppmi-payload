@@ -117,85 +117,80 @@ const safeName = (name: string) =>
     .trim()
 
 // Validation functions
-const validateName = (name: string) => {
+const validateName = (name: any) => {
   if (!name || name.trim().split(/\s+/).length < 1) {
-    throw new Error('Nama Latin harus minimal 1 kata')
+    throw new Error('Errors.NameRequired')
   }
 }
 
-const validateArabicName = (nameArabic: string) => {
+const validateArabicName = (nameArabic: any) => {
   if (!nameArabic || nameArabic.trim().split(/\s+/).length < 1) {
-    throw new Error('Nama Arab harus minimal 1 kata')
+    throw new Error('Errors.NameArabicMin')
   }
   if (!isArabic(nameArabic)) {
-    throw new Error('Nama Arab harus hanya mengandung karakter Arab valid')
+    throw new Error('Errors.NameArabicInvalid')
   }
 }
 
-const validatePassport = (nationality: string, passportNumber?: string) => {
+const validatePassport = (nationality: any, passportNumber: any) => {
   if (!passportNumber) {
-    throw new Error('Nomor paspor wajib diisi')
+    throw new Error('Errors.PassportRequired')
   }
 }
 
-const validateQuranMemorization = (quranMemorization: number) => {
-  if (typeof quranMemorization === 'number') {
-    if (quranMemorization < 0 || quranMemorization > 30) {
-      throw new Error('Jumlah hafalan Quran harus antara 0-30 juz')
-    }
+const validateQuranMemorization = (quranMemorization: any) => {
+  if (quranMemorization < 0 || quranMemorization > 30) {
+    throw new Error('Errors.QuranMemorizationRange')
   }
 }
 
 const validateEducationLevel = (
-  educationLevel: string,
-  continuingStudy?: string,
-  kulliyah?: string,
-  syubah?: string,
+  educationLevel: any,
+  continuingStudy: any,
+  kulliyah: any,
+  syubah: any,
 ) => {
   if (educationLevel === 'S1') {
     if (!continuingStudy) {
-      throw new Error('Field melanjutkan studi wajib diisi untuk S1')
+      throw new Error('Errors.ContinuingStudyRequired')
     }
     if (continuingStudy === 'YES') {
       if (!kulliyah || kulliyah === '') {
-        throw new Error('Kulliyah wajib dipilih jika melanjutkan studi')
+        throw new Error('Errors.KulliyahRequired')
       }
       if (!syubah || syubah === '') {
-        throw new Error("Syu'bah wajib dipilih jika melanjutkan studi")
+        throw new Error('Errors.SyubahRequired')
       }
     }
   }
 }
 
 const validateShofi = (data: any) => {
-  if (!data.shofi_ready_attend) throw new Error('Shofi harus siap hadiri pendaftaran')
-  if (!data.predicate) throw new Error('Predikat wajib diisi untuk Shofi')
-  if (!data.syahadah_photo) throw new Error('Foto syahadah wajib diunggah untuk Shofi')
+  if (!data.shofi_ready_attend) throw new Error('Errors.ShofiRequired')
+  if (!data.predicate) throw new Error('Errors.PredicateRequired')
+  if (!data.syahadah_photo) throw new Error('Errors.SyahadahPhotoRequired')
   if (data.cumulative_score != null) {
     const n = Number(data.cumulative_score)
-    if (isNaN(n) || n < 0 || n > 100) throw new Error('Nilai akumulatif harus antara 0 dan 100')
+    if (isNaN(n) || n < 0 || n > 100) throw new Error('Errors.ScoreRange')
   }
 }
 
 const validateTashfiyah = (data: any) => {
-  if (!data.tashfiyah_ready_attend)
-    throw new Error('Siap hadiri pendaftaran harus dicentang untuk Tashfiyah')
-  if (!data.tashfiyah_ready_submit_proof)
-    throw new Error('Siap serahkan bukti kelulusan harus dicentang untuk Tashfiyah')
+  if (!data.tashfiyah_ready_attend) throw new Error('Errors.TashfiyahRequired')
+  if (!data.tashfiyah_ready_submit_proof) throw new Error('Errors.TashfiyahReadySubmitProof')
   if (!data.tashfiyah_no_graduation_if_failed)
-    throw new Error('Tidak lulus = tidak ikut wisuda harus dicentang untuk Tashfiyah')
-  if (!data.tashfiyah_still_get_attributes)
-    throw new Error('Tidak lulus = tetap dapat atribut harus dicentang untuk Tashfiyah')
+    throw new Error('Errors.TashfiyahNoGraduationIfFailed')
+  if (!data.tashfiyah_still_get_attributes) throw new Error('Errors.TashfiyahStillGetAttributes')
 }
 
 const validateAtribut = (data: any) => {
-  if (!data.atribut_ready_attend) throw new Error('Pembeli atribut harus siap hadir')
-  if (!data.attribute_package) throw new Error('Paket atribut wajib dipilih')
+  if (!data.atribut_ready_attend) throw new Error('Errors.AtributReadyAttend')
+  if (!data.attribute_package) throw new Error('Errors.AttributePackageRequired')
 }
 
 const validateGeneral = (data: any) => {
-  if (!data.photo) throw new Error('Foto diri wajib diunggah')
-  if (!data.terms_agreement) throw new Error('Persetujuan syarat & ketentuan wajib dicentang')
+  if (!data.photo) throw new Error('Errors.PhotoRequired')
+  if (!data.terms_agreement) throw new Error('Errors.TermsRequired')
 }
 
 // Konfigurasi koordinat penulisan teks di atas template PDF.
@@ -232,8 +227,8 @@ export const Registrants: CollectionConfig = {
       label: 'Nama Lengkap (Arab)',
       required: true,
       validate: (val: any) => {
-        if (!val || val.trim().split(/\s+/).length < 1) return 'Nama Arab harus minimal 1 kata'
-        if (!isArabic(val)) return 'Nama Arab harus hanya mengandung karakter Arab valid'
+        if (!val || val.trim().split(/\s+/).length < 1) return 'Errors.NameArabicMin'
+        if (!isArabic(val)) return 'Errors.NameArabicInvalid'
         return true
       },
     },

@@ -41,24 +41,41 @@ export const formSchema = z
     registrant_type: z.enum(['SHOFI', 'TASHFIYAH', 'ATRIBUT']),
     name: z
       .string()
+      .trim()
       // i18n key: FormPage.Errors.NameRequired
-      .min(1, 'FormPage.Errors.NameRequired')
-      // i18n key: FormPage.Errors.NameMinWords
-      .refine((val) => val.trim().split(/\s+/).length >= 1, 'FormPage.Errors.NameMinWords'),
+      .min(1, 'Errors.NameRequired'),
     name_arabic: z
       .string()
+      .trim()
       // i18n key: FormPage.Errors.NameArabicMin
-      .min(1, 'FormPage.Errors.NameArabicMin')
+      .min(1, 'Errors.NameArabicMin')
       // i18n key: FormPage.Errors.NameArabicInvalid
-      .refine(isArabic, 'FormPage.Errors.NameArabicInvalid')
-      // i18n key: FormPage.Errors.NameMinWords
-      .refine((val) => val.trim().split(/\s+/).length >= 1, 'FormPage.Errors.NameMinWords'),
+      .refine(isArabic, 'Errors.NameArabicInvalid'),
     gender: z.enum(['L', 'P']),
-    email: z.string().email('FormPage.Errors.EmailInvalid'),
-    nationality: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
-    passport_number: z.string().default(''),
-    phone_number: z.string().optional(),
-    whatsapp: z.string().min(1, 'FormPage.Errors.WhatsAppRequired'),
+    email: z.string().trim().email('Errors.EmailInvalid'),
+    nationality: z.string().trim().min(1, 'Errors.NationalityRequired'),
+    passport_number: z.string().trim().default(''),
+    phone_number: z
+      .string()
+      .optional()
+      .transform((val) => (val ? val.trim() : val)),
+    whatsapp: z
+      .string()
+      .trim()
+      .min(1, 'Errors.WhatsAppRequired')
+      .transform((val) => {
+        // Remove all non-digit characters except +
+        let cleaned = val.replace(/[^\d+]/g, '')
+        // Ensure it starts with +
+        if (!cleaned.startsWith('+')) {
+          cleaned = '+' + cleaned
+        }
+        return cleaned
+      })
+      .refine((val) => {
+        // Must start with + followed by digits
+        return /^\+\d{7,15}$/.test(val)
+      }, 'Errors.WhatsAppInvalid'),
     kekeluargaan: z
       .enum([
         'KMM',
@@ -79,16 +96,16 @@ export const formSchema = z
         'FOSGAMA',
       ])
       .default('KMM'),
-    university: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
+    university: z.string().trim().min(1, 'Errors.UniversityRequired'),
     education_level: z.enum(['S1', 'S2', 'S3']),
-    first_enrollment_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
-    graduation_year: z.number().min(1900).max(2100, 'Tahun tidak valid'),
-    faculty: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
-    major: z.string().min(1, 'FormPage.Errors.NationalityRequired'),
-    quran_memorization: z.number().min(0).max(30, 'FormPage.Errors.QuranMemorizationRange'),
+    first_enrollment_year: z.number().min(1900).max(2100, 'Errors.YearInvalid'),
+    graduation_year: z.number().min(1900).max(2100, 'Errors.YearInvalid'),
+    faculty: z.string().trim().min(1, 'Errors.FacultyRequired'),
+    major: z.string().trim().min(1, 'Errors.MajorRequired'),
+    quran_memorization: z.number().min(0).max(30, 'Errors.QuranMemorizationRange'),
     continuing_study: z.enum(['YES', 'NO', 'UNDECIDED']).default('NO'),
-    kulliyah: z.string().default('TIDAK ADA'),
-    syubah: z.string().default('TIDAK ADA'),
+    kulliyah: z.string().trim().default('TIDAK ADA'),
+    syubah: z.string().trim().default('TIDAK ADA'),
     // Type-specific fields
     shofi_ready_attend: z.boolean().default(false),
     predicate: z
@@ -103,13 +120,8 @@ export const formSchema = z
         'DHAIF',
       ])
       .default('MUMTAZ'),
-    cumulative_score: z
-      .number()
-      .min(0)
-      .max(100, 'FormPage.Errors.ScoreRange')
-      .nullable()
-      .default(null),
-    syahadah_photo: z.string().default(''),
+    cumulative_score: z.number().min(0).max(100, 'Errors.ScoreRange').nullable().default(null),
+    syahadah_photo: z.string().trim().default(''),
     tashfiyah_ready_attend: z.boolean().default(false),
     tashfiyah_ready_submit_proof: z.boolean().default(false),
     tashfiyah_no_graduation_if_failed: z.boolean().default(false),
@@ -119,30 +131,34 @@ export const formSchema = z
       .enum(['SELENDANG_PIN_MEDALI', 'PLAKAT', 'LENGKAP'])
       .default('SELENDANG_PIN_MEDALI'),
     // General
-    photo: z.string().default(''), // ID file setelah upload
+    photo: z.string().trim().default(''), // ID file setelah upload
     terms_agreement: z
       .boolean()
       // i18n key: FormPage.Errors.TermsRequired
-      .refine((val) => val === true, 'FormPage.Errors.TermsRequired'),
+      .refine((val) => val === true, 'Errors.TermsRequired'),
   })
   .refine(
     (data) => {
-      if (!data.passport_number) {
-        return false
-      }
-      return true
+      // Passport required for all nationalities
+      return !!data.passport_number && data.passport_number.trim() !== ''
     },
-    { message: 'FormPage.Errors.PassportRequired', path: ['passport_number'] },
+    { message: 'Errors.PassportRequired', path: ['passport_number'] },
   )
   .refine(
     (data) => {
       const code = countryPhoneCodes[data.nationality]
-      if (code && data.whatsapp && !data.whatsapp.startsWith(code)) {
+      // Enforce country code only if user already starts with a plus sign
+      if (
+        code &&
+        data.whatsapp &&
+        data.whatsapp.startsWith('+') &&
+        !data.whatsapp.startsWith(code)
+      ) {
         return false
       }
       return true
     },
-    { message: 'FormPage.Errors.WhatsAppRequired', path: ['whatsapp'] },
+    { message: 'Errors.WhatsAppRequired', path: ['whatsapp'] },
   )
   .refine(
     (data) => {
@@ -155,7 +171,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.ContinuingStudyRequired', path: ['continuing_study'] },
+    { message: 'Errors.ContinuingStudyRequired', path: ['continuing_study'] },
   )
   .refine(
     (data) => {
@@ -166,7 +182,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.ShofiRequired', path: ['shofi_ready_attend'] },
+    { message: 'Errors.ShofiRequired', path: ['shofi_ready_attend'] },
   )
   .refine(
     (data) => {
@@ -178,7 +194,7 @@ export const formSchema = z
       }
       return true
     },
-    { message: 'FormPage.Errors.TashfiyahRequired', path: ['tashfiyah_ready_attend'] },
+    { message: 'Errors.TashfiyahRequired', path: ['tashfiyah_ready_attend'] },
   )
 
 export type FormData = z.infer<typeof formSchema>

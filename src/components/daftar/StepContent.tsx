@@ -1446,7 +1446,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                 <React.Fragment key={s.title}>{section(s.title, s.rows)}</React.Fragment>
               ))}
             </div>
-            <div className="mt-8 flex flex-col items-center gap-4">
+            {/*<div className="mt-8 flex flex-col items-center gap-4">
               <details className="w-full">
                 <summary className="cursor-pointer select-none text-xs font-semibold tracking-wide text-[#3E2522]/70 underline-offset-4 hover:underline">
                   {t('Form.Summary.RawJSON')}
@@ -1473,7 +1473,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
               <p className="text-center text-[#3E2522] text-sm font-medium">
                 {t('Form.Summary.FinalNote')}
               </p>
-            </div>
+            </div>*/}
           </div>
         </div>
       )
