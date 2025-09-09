@@ -181,6 +181,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
     month: 'long',
     year: 'numeric',
   })
+  const ceremonyYear = ceremonyDate?.getFullYear()
 
   return (
     <section
@@ -311,7 +312,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               className="inline-flex items-center gap-3 rounded-full bg-white/10 px-8 py-3 text-[13px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur-sm border border-white/10 shadow-lg"
             >
               <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-400" />
-              Pendaftaran Wisuda <span className="text-white/70 font-semibold">2025</span>
+              Pendaftaran Wisuda <span className="text-white/70 font-semibold">{ceremonyYear || '2025'}</span>
             </motion.div>
 
             {/* Main Title with Enhanced Animation */}
@@ -319,7 +320,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               id="hero-alt-heading"
               className="font-extrabold tracking-tight text-5xl leading-[1.05] md:text-7xl lg:text-8xl drop-shadow-lg"
             >
-              {'Convocation Ceremony PPMI Mesir 2025'.split(' ').map((w, i) => (
+              {`Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`.split(' ').map((w, i) => (
                 <motion.span
                   key={w + i}
                   className={cn(

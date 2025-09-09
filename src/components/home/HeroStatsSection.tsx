@@ -121,7 +121,7 @@ export const HeroStatsSection: React.FC<HeroStatsSectionProps> = ({
           >
             <div className="flex items-center justify-between text-[11px] font-medium text-white/60">
               <span>Registrasi Berjalan</span>
-              <span>{progressPercent > 0 ? `~${progressPercent}%` : '~0%'}</span>
+              <span>{progressPercent > 0 ? `${progressPercent.toFixed(1)}%` : '0%'}</span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
               <motion.div

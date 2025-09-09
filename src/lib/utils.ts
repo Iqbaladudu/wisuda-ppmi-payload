@@ -48,3 +48,48 @@ export const sendWhatsAppMessage = async (
     console.error(`Failed to send WhatsApp to ${name}:`, response.status, await response.json())
   }
 }
+
+// Helper function to send WhatsApp file with caption
+export const sendWhatsAppFile = async (
+  phoneNumber: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  caption: string,
+  apiUrl: string,
+  user: string,
+  password: string,
+  name: string,
+): Promise<void> => {
+  // Create base64 encoded credentials
+  const credentials = Buffer.from(`${user}:${password}`).toString('base64')
+
+  // Create form data
+  const formData = new FormData()
+  formData.append('phone', phoneNumber)
+  formData.append('caption', caption)
+  formData.append('is_forwarded', 'false')
+  formData.append('duration', '3600')
+  
+  // Create file blob
+  const fileBlob = new Blob([fileBuffer], { type: 'application/pdf' })
+  formData.append('file', fileBlob, fileName)
+
+  try {
+    // Call external WhatsApp API for file sending
+    const response = await fetch(`${apiUrl}/send/file`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${credentials}`,
+      },
+      body: formData,
+    })
+
+    if (response.ok) {
+      console.log(`WhatsApp PDF sent to ${name} (${phoneNumber})`)
+    } else {
+      console.error(`Failed to send WhatsApp PDF to ${name}:`, response.status, await response.text())
+    }
+  } catch (error) {
+    console.error(`Error sending WhatsApp PDF to ${name}:`, error)
+  }
+}

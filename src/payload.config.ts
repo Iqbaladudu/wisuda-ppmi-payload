@@ -16,6 +16,7 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { Syahadah } from './collections/Syahadah'
 import { ProfilePhoto } from './collections/ProfilePhoto'
 import { ConfirmationPDF } from './collections/ConfirmationPDF'
+import { RegistrationSettings } from './collections/RegistrationSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,6 +43,7 @@ export default buildConfig({
     Syahadah,
     ProfilePhoto,
     ConfirmationPDF,
+    RegistrationSettings,
   ],
   cors: [process.env.CORS_ORIGIN || 'http://localhost:3000'],
   csrf: [process.env.CSRF_ORIGIN || 'http://localhost:3000'],

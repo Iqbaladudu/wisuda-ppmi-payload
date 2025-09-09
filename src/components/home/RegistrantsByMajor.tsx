@@ -18,6 +18,9 @@ import {
 interface CountItem {
   major: string
   count: number
+  label?: string
+  percentage?: number
+  percentageOfLimit?: number
 }
 
 // Mapping untuk nama jurusan yang lebih readable
@@ -34,8 +37,12 @@ const majorNameMap: Record<string, string> = {
   'JAMIAT_WA_MUAMALAH': 'Jami\'at wa Mu\'amalah',
 }
 
-function getReadableMajorName(major: string): string {
-  return majorNameMap[major] || major.replace(/_/g, ' ')
+function getReadableMajorName(item: CountItem): string {
+  // Use label from API if available, otherwise fallback to mapping
+  if (item.label) {
+    return item.label
+  }
+  return majorNameMap[item.major] || item.major.replace(/_/g, ' ')
 }
 
 interface EduItem {
@@ -43,22 +50,50 @@ interface EduItem {
   count: number
 }
 
-async function fetchCounts(): Promise<CountItem[]> {
+interface ApiResponse {
+  data: CountItem[]
+  summary: {
+    totalRegistrants: number
+    maxRegistrants: number | null
+    registrationOpen: boolean
+    remainingSlots: number | null
+    utilizationRate: number | null
+  }
+}
+
+async function fetchCounts(): Promise<{ data: CountItem[]; summary: ApiResponse['summary'] }> {
   try {
     const response = await fetch('/api/registrants-by-major')
     if (!response.ok) throw new Error('Failed to fetch data')
-    return await response.json()
+    const result: ApiResponse = await response.json()
+    return { data: result.data, summary: result.summary }
   } catch (error) {
     console.error('Error fetching registrants by major:', error)
-    return []
+    return { data: [], summary: { totalRegistrants: 0, maxRegistrants: null, registrationOpen: true, remainingSlots: null, utilizationRate: null } }
   }
 }
 
 async function fetchEdu(): Promise<EduItem[]> {
   try {
-    const response = await fetch('/api/registrants-by-education')
-    if (!response.ok) throw new Error('Failed to fetch education stats')
-    return await response.json()
+    // Coba ambil dari real-time stats API dulu untuk data yang lebih lengkap
+    const response = await fetch('/api/stats/real-time')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.breakdowns?.byEducation) {
+        return data.breakdowns.byEducation.map((item: any) => ({
+          level: item.key,
+          count: item.count
+        }))
+      }
+    }
+    
+    // Fallback ke API lama
+    const fallbackResponse = await fetch('/api/registrants-by-education')
+    if (fallbackResponse.ok) {
+      return await fallbackResponse.json()
+    }
+    
+    return []
   } catch (e) {
     console.error('Error fetching education stats:', e)
     return []
@@ -70,12 +105,15 @@ export const RegistrantsByMajor = () => {
   const [sort, setSort] = React.useState<
     'COUNT_DESC' | 'COUNT_ASC' | 'ALPHA_ASC' | 'ALPHA_DESC' | 'PERCENT_DESC'
   >('COUNT_DESC')
-  const { data: counts = [], isLoading: loadingMajors } = useQuery({
+  const { data: countsData = { data: [], summary: { totalRegistrants: 0, maxRegistrants: null, registrationOpen: true, remainingSlots: null, utilizationRate: null } }, isLoading: loadingMajors } = useQuery({
     queryKey: ['registrants-by-major'],
     queryFn: fetchCounts,
     refetchInterval: 30000,
     refetchOnWindowFocus: true,
   })
+  
+  const counts = countsData.data
+  const maxRegistrants = countsData.summary.maxRegistrants
   const { data: edu = [], isLoading: loadingEdu } = useQuery({
     queryKey: ['registrants-by-education'],
     queryFn: fetchEdu,
@@ -108,7 +146,7 @@ export const RegistrantsByMajor = () => {
   const filtered = React.useMemo(() => {
     const term = search.trim().toLowerCase()
     let list = term
-      ? counts.filter((c) => getReadableMajorName(c.major).toLowerCase().includes(term))
+      ? counts.filter((c) => getReadableMajorName(c).toLowerCase().includes(term))
       : counts.slice()
     list.sort((a, b) => {
       switch (sort) {
@@ -184,6 +222,11 @@ export const RegistrantsByMajor = () => {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
+                    {maxRegistrants && (
+                      <span className="block mt-1 text-xs text-[#FCEFEA]/50">
+                        Kuota tersedia: {maxRegistrants.toLocaleString('id-ID')}
+                      </span>
+                    )}
                   </div>
                 </div>
                 
@@ -205,11 +248,12 @@ export const RegistrantsByMajor = () => {
                       borderColor: 'border-emerald-400/30'
                     },
                     {
-                      label: 'Jenjang Pendidikan',
-                      value: edu.length,
-                      icon: '🎓',
-                      color: 'from-purple-500/20 to-purple-600/10',
-                      borderColor: 'border-purple-400/30'
+                      label: maxRegistrants ? 'Kuota Terisi' : 'Jenjang Pendidikan',
+                      value: maxRegistrants ? ((total / maxRegistrants) * 100) : edu.length,
+                      suffix: maxRegistrants ? '%' : '',
+                      icon: maxRegistrants ? '📊' : '🎓',
+                      color: maxRegistrants ? 'from-orange-500/20 to-orange-600/10' : 'from-purple-500/20 to-purple-600/10',
+                      borderColor: maxRegistrants ? 'border-orange-400/30' : 'border-purple-400/30'
                     }
                   ].map((stat, index) => (
                     <div 
@@ -224,7 +268,8 @@ export const RegistrantsByMajor = () => {
                           {stat.icon}
                         </div>
                         <div className="text-3xl md:text-4xl font-bold tabular-nums text-white mb-2">
-                          {stat.value}
+                          {typeof stat.value === 'number' && stat.suffix === '%' ? stat.value.toFixed(1) : stat.value}
+                          {stat.suffix}
                         </div>
                         <div className="text-xs md:text-sm font-medium text-white/70 uppercase tracking-wider">
                           {stat.label}
@@ -260,7 +305,8 @@ export const RegistrantsByMajor = () => {
       {/* Enhanced grid content */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((c, idx) => {
-          const percent = (c.count / max) * 100
+          // Hitung persentase berdasarkan batas maksimal pendaftar
+          const percent = maxRegistrants ? (c.count / maxRegistrants) * 100 : (c.count / total) * 100
           const rank = idx + 1
           const isTopThree = rank <= 3
           
@@ -317,7 +363,7 @@ export const RegistrantsByMajor = () => {
                         ? 'text-yellow-300 group-hover:text-yellow-200' 
                         : 'text-white/80 group-hover:text-white'
                     )}>
-                      {getReadableMajorName(c.major)}
+                      {getReadableMajorName(c)}
                     </span>
                     <div className="flex items-center justify-between">
                       <span className={cn(
@@ -368,10 +414,10 @@ export const RegistrantsByMajor = () => {
                           ? 'text-yellow-300/80' 
                           : 'text-white/60'
                       )}>
-                        {percent.toFixed(0)}%
+                        {percent.toFixed(1)}%
                       </span>
                       <span className="text-white/40 font-medium tracking-wide">
-                        {((c.count / total) * 100).toFixed(1)}% total
+                        {maxRegistrants ? 'dari kuota' : 'dari total'}
                       </span>
                     </div>
                   </div>
@@ -483,39 +529,49 @@ export const RegistrantsByMajor = () => {
 
           {/* Education level mini cards */}
           <div className="flex flex-wrap justify-center gap-4">
-            {(loadingEdu
-              ? [
-                  { level: 'S1', count: 0 },
-                  { level: 'S2', count: 0 },
-                  { level: 'S3', count: 0 },
-                ]
-              : edu
-            ).map((e) => {
-              const pct = eduTotal ? Math.round((e.count / eduTotal) * 100) : 0
-              return (
+            {loadingEdu ? (
+              // Loading skeleton untuk education cards
+              Array.from({ length: 3 }).map((_, i) => (
                 <div
-                  key={e.level}
-                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md shadow-inner shadow-black/40 min-w-[120px] text-left"
+                  key={i}
+                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md shadow-inner shadow-black/40 min-w-[120px] text-left animate-pulse"
                 >
-                  <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.15),transparent_55%)]" />
                   <div className="relative flex flex-col gap-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">
-                      {e.level}
-                    </span>
-                    <span className="text-xl font-bold tabular-nums tracking-tight">
-                      {loadingEdu ? '—' : e.count}
-                    </span>
-                    <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#E07C45] via-[#D9683A] to-[#B8451A]"
-                        style={{ width: loadingEdu ? '0%' : `${pct}%` }}
-                      />
-                    </div>
-                    <span className="text-[9px] text-white/50 font-medium">{pct}%</span>
+                    <div className="h-3 w-8 rounded bg-white/15" />
+                    <div className="h-6 w-12 rounded bg-white/12" />
+                    <div className="h-1.5 w-full rounded-full bg-white/10" />
+                    <div className="h-3 w-6 rounded bg-white/10" />
                   </div>
                 </div>
-              )
-            })}
+              ))
+            ) : (
+              edu.map((e) => {
+                const pct = eduTotal ? Math.round((e.count / eduTotal) * 100) : 0
+                return (
+                  <div
+                    key={e.level}
+                    className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md shadow-inner shadow-black/40 min-w-[120px] text-left"
+                  >
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.15),transparent_55%)]" />
+                    <div className="relative flex flex-col gap-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">
+                        {e.level}
+                      </span>
+                      <span className="text-xl font-bold tabular-nums tracking-tight">
+                        {e.count}
+                      </span>
+                      <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#E07C45] via-[#D9683A] to-[#B8451A]"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-[9px] text-white/50 font-medium">{pct}%</span>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </div>

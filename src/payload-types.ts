@@ -75,6 +75,7 @@ export interface Config {
     syahadah: Syahadah;
     'profile-photo': ProfilePhoto;
     'confirmation-pdf': ConfirmationPdf;
+    'registration-settings': RegistrationSetting;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +90,7 @@ export interface Config {
     syahadah: SyahadahSelect<false> | SyahadahSelect<true>;
     'profile-photo': ProfilePhotoSelect<false> | ProfilePhotoSelect<true>;
     'confirmation-pdf': ConfirmationPdfSelect<false> | ConfirmationPdfSelect<true>;
+    'registration-settings': RegistrationSettingsSelect<false> | RegistrationSettingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -345,6 +347,30 @@ export interface GoogleSheetsCred {
   createdAt: string;
 }
 /**
+ * Pengaturan batas maksimal pendaftar
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registration-settings".
+ */
+export interface RegistrationSetting {
+  id: string;
+  name: string;
+  /**
+   * Jumlah maksimal pendaftar yang diperbolehkan
+   */
+  max_registrants: number;
+  /**
+   * Deskripsi pengaturan (opsional)
+   */
+  description?: string | null;
+  /**
+   * Apakah pengaturan ini sedang aktif?
+   */
+  is_active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -382,6 +408,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'confirmation-pdf';
         value: string | ConfirmationPdf;
+      } | null)
+    | ({
+        relationTo: 'registration-settings';
+        value: string | RegistrationSetting;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -596,6 +626,18 @@ export interface ConfirmationPdfSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registration-settings_select".
+ */
+export interface RegistrationSettingsSelect<T extends boolean = true> {
+  name?: T;
+  max_registrants?: T;
+  description?: T;
+  is_active?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

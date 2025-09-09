@@ -1,4 +1,4 @@
-import { createConfirmationMessage, sendWhatsAppMessage } from '@/lib/utils'
+import { createConfirmationMessage, sendWhatsAppMessage, sendWhatsAppFile } from '@/lib/utils'
 import type { CollectionConfig } from 'payload'
 import { PDFDocument, StandardFonts, PDFFont } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
@@ -191,6 +191,37 @@ const validateAtribut = (data: any) => {
 const validateGeneral = (data: any) => {
   if (!data.photo) throw new Error('Errors.PhotoRequired')
   if (!data.terms_agreement) throw new Error('Errors.TermsRequired')
+}
+
+const validateMaxRegistrants = async (req: any) => {
+  try {
+    // Get active registration settings
+    const settings = await req.payload.find({
+      collection: 'registration-settings',
+      where: {
+        is_active: { equals: true },
+      },
+      limit: 1,
+    })
+
+    if (settings.docs.length > 0) {
+      const maxRegistrants = settings.docs[0].max_registrants
+      
+      // Count current registrants
+      const currentRegistrants = await req.payload.count({
+        collection: 'registrants',
+      })
+
+      if (currentRegistrants.total >= maxRegistrants) {
+        throw new Error(`Pendaftaran telah ditutup. Jumlah maksimal pendaftar (${maxRegistrants}) telah tercapai.`)
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error('Gagal memeriksa batas maksimal pendaftar')
+  }
 }
 
 // Konfigurasi koordinat penulisan teks di atas template PDF.
@@ -522,7 +553,7 @@ export const Registrants: CollectionConfig = {
 
               // 2. Font embedding
               pdfDoc.registerFontkit(fontkit)
-              let font: PDFFont
+              let font: PDFFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
               let hasUnicodeFont = false
               try {
                 const fontCandidates = [
@@ -638,43 +669,52 @@ export const Registrants: CollectionConfig = {
                   context: { skipPdf: true }, // HINDARI regenerasi
                   depth: 0,
                 })
+                
+                // Kirim PDF ke WhatsApp setelah upload berhasil
+                try {
+                  const phoneNumber = doc.whatsapp.replace('+', '') + '@s.whatsapp.net'
+                  const pdfCaption = createConfirmationMessage(doc, operation)
+                  const whatsappApiUrl = process.env.WHATSAPP_API_URL
+                  const whatsappUser = process.env.WHATSAPP_API_USER
+                  const whatsappPassword = process.env.WHATSAPP_API_PASSWORD
+                  
+                  if (whatsappApiUrl && whatsappUser && whatsappPassword) {
+                    await sendWhatsAppFile(
+                      phoneNumber,
+                      pdfBuffer,
+                      fileName,
+                      pdfCaption,
+                      whatsappApiUrl,
+                      whatsappUser,
+                      whatsappPassword,
+                      doc.name,
+                    )
+                    console.log(`WhatsApp PDF sent to ${doc.name} (${phoneNumber})`)
+                  } else {
+                    console.warn('WhatsApp API credentials not configured')
+                  }
+                } catch (pdfError) {
+                  console.error('Error sending WhatsApp PDF:', pdfError)
+                }
               }
             } catch (error) {
               console.error('Error in PDF generation:', error)
             }
           }
 
-          // Kirim WhatsApp (opsional: bisa juga diberi guard supaya tidak dobel)
-          try {
-            const phoneNumber = doc.whatsapp.replace('+', '') + '@s.whatsapp.net'
-            const confirmationMessage = createConfirmationMessage(doc, operation)
-            const whatsappApiUrl = process.env.WHATSAPP_API_URL
-            const whatsappUser = process.env.WHATSAPP_API_USER
-            const whatsappPassword = process.env.WHATSAPP_API_PASSWORD
-            if (whatsappApiUrl && whatsappUser && whatsappPassword) {
-              await sendWhatsAppMessage(
-                phoneNumber,
-                confirmationMessage,
-                whatsappApiUrl,
-                whatsappUser,
-                whatsappPassword,
-                doc.name,
-              )
-              console.log(`WhatsApp confirmation sent to ${doc.name} (${phoneNumber})`)
-            } else {
-              console.warn('WhatsApp API credentials not configured')
-            }
-          } catch (err) {
-            console.error('Error sending WhatsApp confirmation:', err)
-          }
-
+  
           return doc
         }
       },
     ],
     beforeValidate: [
-      async ({ data, originalDoc }) => {
+      async ({ data, originalDoc, operation, req }) => {
         const d = { ...(originalDoc || {}), ...(data || {}) }
+
+        // Check max registrants limit only for create operation
+        if (operation === 'create') {
+          await validateMaxRegistrants(req)
+        }
 
         // Compute study_duration
         if (typeof d.graduation_year === 'number' && typeof d.first_enrollment_year === 'number') {
