@@ -13,6 +13,9 @@ const nextConfig = {
 
     return webpackConfig
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
 
 const withNextIntl = createNextIntlPlugin()

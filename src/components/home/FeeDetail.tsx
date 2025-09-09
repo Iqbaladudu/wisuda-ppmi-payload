@@ -6,43 +6,47 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { useMessages } from 'next-intl'
 
 interface FeeDetailProps {
   className?: string
 }
 
 const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
+  const messages = useMessages()
+  const feeMsg = messages.FeeDetail
+
   const wisudaFees = [
-    { item: 'Sewa Gedung', amount: 'EGP 600' },
-    { item: 'Prasarana', amount: 'EGP 650' },
-    { item: 'Selempang', amount: 'EGP 240' },
-    { item: 'Medali dan Pin', amount: 'EGP 160' },
-    { item: 'Plakat', amount: 'EGP 250' },
-    { item: 'Paper Bag dan Map', amount: 'EGP 230' },
-    { item: 'Konsumsi', amount: 'EGP 170' },
-    { item: 'Dokumentasi', amount: 'EGP 150' },
-    { item: 'Administrasi', amount: 'EGP 200' },
+    { item: feeMsg.wisudaFees.SewaGedung, amount: 'EGP 600' },
+    { item: feeMsg.wisudaFees.Prasarana, amount: 'EGP 650' },
+    { item: feeMsg.wisudaFees.Selempang, amount: 'EGP 240' },
+    { item: feeMsg.wisudaFees.MedaliPin, amount: 'EGP 160' },
+    { item: feeMsg.wisudaFees.Plakat, amount: 'EGP 250' },
+    { item: feeMsg.wisudaFees.PaperBagMap, amount: 'EGP 230' },
+    { item: feeMsg.wisudaFees.Konsumsi, amount: 'EGP 170' },
+    { item: feeMsg.wisudaFees.Dokumentasi, amount: 'EGP 150' },
+    { item: feeMsg.wisudaFees.Administrasi, amount: 'EGP 200' },
   ]
 
   const atributPackages = [
     {
-      name: 'Atribut Lengkap',
+      name: feeMsg.atributPackages.AtributLengkap.name,
       price: 'EGP 750',
-      description: 'Selempang, Medali & Pin, Plakat, dan Administrasi',
-      popular: true
+      description: feeMsg.atributPackages.AtributLengkap.description,
+      popular: true,
     },
     {
-      name: 'Atribut Paket A',
+      name: feeMsg.atributPackages.AtributPaketA.name,
       price: 'EGP 500',
-      description: 'Selempang, Medali & Pin, dan Administrasi',
-      popular: false
+      description: feeMsg.atributPackages.AtributPaketA.description,
+      popular: false,
     },
     {
-      name: 'Atribut Paket B',
+      name: feeMsg.atributPackages.AtributPaketB.name,
       price: 'EGP 350',
-      description: 'Plakat dan Administrasi',
-      popular: false
-    }
+      description: feeMsg.atributPackages.AtributPaketB.description,
+      popular: false,
+    },
   ]
 
   const totalWisudaFees = wisudaFees.reduce((total, fee) => {
@@ -64,23 +68,21 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-16 text-gray-400"
         >
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-white/10 to-white/5 px-4 py-2 text-xs font-medium tracking-wide ring-1 ring-white/20 backdrop-blur-sm border border-white/15 mb-6"
             whileHover={{ scale: 1.05 }}
           >
-            <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A] animate-pulse" />
-            Informasi Pendaftaran
+            <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A] animate-pulse text-white" />
+            {feeMsg.sectionBadge}
           </motion.div>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent mb-4">
-            Rincian Biaya Pendaftaran
+            {feeMsg.sectionHeading}
           </h2>
 
-          <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Informasi lengkap mengenai biaya pendaftaran wisuda dan paket atribut yang tersedia
-          </p>
+          <p className="text-lg text-white/80 max-w-2xl mx-auto">{feeMsg.sectionDescription}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
@@ -97,7 +99,7 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
                   <div className="h-6 w-6 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A] flex items-center justify-center">
                     <span className="text-xs text-white font-bold">1</span>
                   </div>
-                  Rincian Biaya Pendaftaran Wisuda
+                  {feeMsg.wisudaFeesTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -124,7 +126,7 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
                   transition={{ duration: 0.5, delay: 0.9 }}
                   className="flex justify-between items-center py-2 bg-gradient-to-r from-white/10 to-transparent px-4 rounded-lg"
                 >
-                  <span className="text-white font-semibold">Total</span>
+                  <span className="text-white font-semibold">{feeMsg.total}</span>
                   <Badge className="bg-gradient-to-r from-[#E07C45] to-[#B8451A] text-white border-0">
                     EGP {totalWisudaFees}
                   </Badge>
@@ -146,7 +148,7 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
                   <div className="h-6 w-6 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A] flex items-center justify-center">
                     <span className="text-xs text-white font-bold">2</span>
                   </div>
-                  Rincian Biaya Pendaftaran Atribut
+                  {feeMsg.atributFeesTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -158,25 +160,25 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
                     className={`relative p-4 rounded-lg border transition-all duration-300 ${
-                      pkg.popular 
-                        ? 'border-[#E07C45]/50 bg-gradient-to-r from-[#E07C45]/10 to-transparent shadow-lg shadow-[#E07C45]/10' 
+                      pkg.popular
+                        ? 'border-[#E07C45]/50 bg-gradient-to-r from-[#E07C45]/10 to-transparent shadow-lg shadow-[#E07C45]/10'
                         : 'border-white/10 bg-white/5 hover:bg-white/8'
                     }`}
                   >
                     {pkg.popular && (
                       <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-[#E07C45] to-[#B8451A] text-white text-xs">
-                        Paling Lengkap
+                        {feeMsg.popularBadge}
                       </Badge>
                     )}
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-white font-semibold">{pkg.name}</h3>
-                      <Badge 
-                        variant={pkg.popular ? "default" : "outline"}
+                      <Badge
+                        variant={pkg.popular ? 'default' : 'outline'}
                         className={cn(
-                          "text-white",
-                          pkg.popular 
-                            ? "bg-gradient-to-r from-[#E07C45] to-[#B8451A] border-0" 
-                            : "border-white/20 bg-white/5"
+                          'text-white',
+                          pkg.popular
+                            ? 'bg-gradient-to-r from-[#E07C45] to-[#B8451A] border-0'
+                            : 'border-white/20 bg-white/5',
                         )}
                       >
                         {pkg.price}
@@ -204,14 +206,12 @@ const FeeDetail: React.FC<FeeDetailProps> = ({ className }) => {
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#E07C45] to-[#B8451A] flex items-center justify-center">
                   <span className="text-white font-bold">!</span>
                 </div>
-                <h3 className="text-xl font-bold text-white">Kuota Terbatas</h3>
+                <h3 className="text-xl font-bold text-white">{feeMsg.quotaTitle}</h3>
               </div>
               <div className="text-3xl md:text-4xl font-bold text-white mb-2">
-                HANYA 1.200 ORANG
+                {feeMsg.quotaAmount}
               </div>
-              <p className="text-white/80">
-                Kuota pendaftaran wisuda terbatas, segera daftar untuk memastikan tempat Anda
-              </p>
+              <p className="text-white/80">{feeMsg.quotaDescription}</p>
             </CardContent>
           </Card>
         </motion.div>

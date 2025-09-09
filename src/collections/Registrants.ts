@@ -2,6 +2,7 @@ import { createConfirmationMessage, sendWhatsAppMessage, sendWhatsAppFile } from
 import type { CollectionConfig } from 'payload'
 import { PDFDocument, StandardFonts, PDFFont } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
+import { drawQRCodeOnPDF, drawImageOnPDF, FIELD_COORDINATES } from '@/lib/pdf-qrcode'
 
 // Reusable enums (mirroring Django TextChoices)
 const RegistrantType = [
@@ -206,14 +207,16 @@ const validateMaxRegistrants = async (req: any) => {
 
     if (settings.docs.length > 0) {
       const maxRegistrants = settings.docs[0].max_registrants
-      
+
       // Count current registrants
       const currentRegistrants = await req.payload.count({
         collection: 'registrants',
       })
 
       if (currentRegistrants.total >= maxRegistrants) {
-        throw new Error(`Pendaftaran telah ditutup. Jumlah maksimal pendaftar (${maxRegistrants}) telah tercapai.`)
+        throw new Error(
+          `Pendaftaran telah ditutup. Jumlah maksimal pendaftar (${maxRegistrants}) telah tercapai.`,
+        )
       }
     }
   } catch (error) {
@@ -636,14 +639,64 @@ export const Registrants: CollectionConfig = {
               // Flatten the form to make it non-editable
               form.flatten()
 
-              // 5. Simpan
-              const pdfBytes = await pdfDoc.save()
+              // 5. Generate QR code dengan data teks
+              const qrText = `Nama: ${doc.name}\nNama Arab: ${doc.name_arabic}\nJenis Kelamin: ${doc.gender === 'L' ? 'Laki-laki' : doc.gender === 'P' ? 'Perempuan' : ''}\nEmail: ${doc.email}\nKekeluargaan: ${doc.kekeluargaan}\nNomor Paspor: ${doc.passport_number}\nWhatsApp: ${doc.whatsapp}`
+              let pdfBytes = await drawQRCodeOnPDF(
+                await pdfDoc.save(),
+                qrText,
+                FIELD_COORDINATES.QR,
+              )
+
+              console.log('syahadah_photo', doc.syahadah_photo)
+              // 6. Tambahkan syahadah photo jika ada
+              if (doc.syahadah_photo) {
+                try {
+                  // Ambil data gambar syahadah dari collection
+                  const syahadahDoc = await payload.findByID({
+                    collection: 'syahadah',
+                    id: doc.syahadah_photo,
+                  })
+
+                  if (syahadahDoc && syahadahDoc.filename) {
+                    // Download gambar dari endpoint syahadah
+                    const imageUrl = `${process.env.BASE_URL || ''}/api/syahadah/file/${encodeURIComponent(syahadahDoc.filename)}`
+                    console.log('Fetching syahadah image from:', imageUrl)
+                    const imageResponse = await fetch(imageUrl)
+                    if (imageResponse.ok) {
+                      const imageData = new Uint8Array(await imageResponse.arrayBuffer())
+
+                      // Tambahkan halaman ketiga untuk syahadah jika belum ada
+                      const currentPdfDoc = await PDFDocument.load(pdfBytes)
+                      const pages = currentPdfDoc.getPages()
+
+                      if (pages.length < 3) {
+                        // Tambahkan halaman baru
+                        const newPage = currentPdfDoc.addPage()
+                        pdfBytes = await currentPdfDoc.save()
+                      }
+
+                      // Draw syahadah photo di halaman 3 (tengah)
+                      pdfBytes = await drawImageOnPDF(
+                        pdfBytes,
+                        imageData,
+                        FIELD_COORDINATES.SYAHADAH,
+                      )
+
+                      console.log('Syahadah photo added to page 3')
+                    }
+                  }
+                } catch (error) {
+                  console.warn('Error adding syahadah photo to PDF:', error)
+                }
+              }
+
+              // 7. Simpan
               const pdfBuffer = Buffer.from(pdfBytes)
               const fileName = `confirmation_${regId}.pdf`
 
               console.log(`Generated confirmation PDF for ${doc.name} (${regId})`)
 
-              // 6. Upload file
+              // 8. Upload file
               const uploadedFile = await payload.create({
                 collection: 'confirmation-pdf',
                 data: {
@@ -659,7 +712,7 @@ export const Registrants: CollectionConfig = {
               })
 
               const pdfId = uploadedFile.id
-              console.log(`Confirmation PDF stored: ${pdfId}`)
+              console.log(`Confirmation PDF with QR code stored: ${pdfId}`)
 
               if (pdfId && doc.confirmation_pdf !== pdfId) {
                 await req.payload.update({
@@ -669,7 +722,7 @@ export const Registrants: CollectionConfig = {
                   context: { skipPdf: true }, // HINDARI regenerasi
                   depth: 0,
                 })
-                
+
                 // Kirim PDF ke WhatsApp setelah upload berhasil
                 try {
                   const phoneNumber = doc.whatsapp.replace('+', '') + '@s.whatsapp.net'
@@ -677,7 +730,7 @@ export const Registrants: CollectionConfig = {
                   const whatsappApiUrl = process.env.WHATSAPP_API_URL
                   const whatsappUser = process.env.WHATSAPP_API_USER
                   const whatsappPassword = process.env.WHATSAPP_API_PASSWORD
-                  
+
                   if (whatsappApiUrl && whatsappUser && whatsappPassword) {
                     await sendWhatsAppFile(
                       phoneNumber,
@@ -702,7 +755,6 @@ export const Registrants: CollectionConfig = {
             }
           }
 
-  
           return doc
         }
       },

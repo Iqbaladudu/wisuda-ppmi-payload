@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import FeeDetail from '@/components/home/FeeDetail'
+import Requirements from '@/components/intro/Requirements'
 
 // Next.js build error: expecting default PageProps, so drop custom param typing & let next-intl infer locale.
 export async function generateMetadata() {
@@ -178,6 +179,9 @@ export default function IntroPage() {
 
       {/* Fee Detail Section */}
       <FeeDetail />
+      
+      {/* Requirements Section */}
+      <Requirements />
     </div>
   )
 }

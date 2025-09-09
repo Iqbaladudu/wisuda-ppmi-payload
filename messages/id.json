@@ -38,6 +38,139 @@
   "Navbar": {
     "joinNow": "Bergabung Sekarang"
   },
+  "Requirements": {
+    "title": "Persyaratan Pendaftaran Ulang",
+    "subtitle": "Ketentuan dan persyaratan yang harus dipenuhi untuk pendaftaran ulang wisuda PPMI Mesir 2025",
+    "reRegistration": {
+      "title": "Persyaratan Pendaftaran Ulang",
+      "description": "Berikut adalah persyaratan wajib yang harus dipenuhi untuk pendaftaran ulang:",
+      "items": {
+        "presence": {
+          "title": "Kehadiran Langsung",
+          "description": "Hadir secara langsung di lokasi pendaftaran ulang sesuai jadwal yang telah ditentukan."
+        },
+        "qrCode": {
+          "title": "Bukti Pendaftaran Online",
+          "description": "Membawa bukti pendaftaran online berupa QR Code."
+        },
+        "payment": {
+          "title": "Pelunasan Biaya",
+          "description": "Melunasi biaya pendaftaran sesuai dengan pilihan paket peserta wisuda."
+        }
+      }
+    },
+    "specific": {
+      "title": "Ketentuan Khusus",
+      "description": "Ketentuan khusus yang berlaku selama proses pendaftaran:",
+      "items": {
+        "formSchedule": {
+          "title": "Jadwal Pengisian Formulir",
+          "description": "Pendaftar dapat mengisi Website Formulir Pendaftaran Online setiap hari pada pukul 09.00-15.00 WLK. Setelah pukul 15.00, formulir akan ditutup dan dibuka kembali pada pukul 09.00 keesokan harinya."
+        },
+        "representation": {
+          "title": "Perwakilan",
+          "description": "Panitia tidak menerima pendaftaran ulang di luar jadwal yang telah ditentukan. Bagi peserta yang berhalangan hadir, pendaftaran ulang dapat diwakilkan. Setiap peserta hanya diperbolehkan mewakili maksimal 3 orang."
+        },
+        "quota": {
+          "title": "Batas Kuota",
+          "description": "Pendaftaran akan ditutup apabila kuota telah terpenuhi, meskipun jadwal pendaftaran masih berlangsung."
+        },
+        "certificate": {
+          "title": "Persyaratan Syahadah",
+          "description": "Bagi pendaftar yang belum mengurus Syahadah Muaqatah diperbolehkan melampirkan Natijah tingkat 4."
+        },
+        "deadline": {
+          "title": "Batas Pengumpulan Nilai",
+          "description": "Batas akhir pengumpulan Predikat (Taqdir 'Am) dan Nilai Akumulatif (Tarakumi) bagi pendaftar Tashfiyah adalah 10 Oktober 2025.",
+          "badge": "Penting"
+        },
+        "consequences": {
+          "title": "Konsekuensi Melewati Deadline",
+          "description": "Setelah melewati batas waktu tersebut, pendaftar wajib menerima konsekuensi berikut:",
+          "subItems": {
+            "listOrder": "Ditempatkan pada urutan terakhir dalam daftar pemanggilan",
+            "scoreDetermination": "Nilai Akumulatif akan ditentukan berdasarkan kebijakan panitia"
+          }
+        },
+        "graduationConsequences": {
+          "title": "Konsekuensi Tidak Lulus",
+          "description": "Apabila pendaftar secara resmi dinyatakan tidak lulus tingkat akhir, maka:",
+          "subItems": {
+            "noCeremony": "Peserta tidak berhak mengikuti acara seremonial Wisuda PPMI Mesir 2025",
+            "stillGetAttributes": "Peserta tetap berhak memperoleh atribut wisuda, karena proses pemesanan atribut telah dilakukan sejak pendaftaran dibuka"
+          }
+        },
+        "withdrawalDeadline": {
+          "title": "Batas Pengunduran Diri",
+          "description": "Batas akhir pengajuan pengunduran diri bagi wisudawan yang dinyatakan tidak lulus tingkat akhir adalah 18 Oktober 2025.",
+          "badge": "Terakhir"
+        },
+        "refund": {
+          "title": "Kebijakan Pengembalian Biaya",
+          "description": "Bagi pendaftar yang mengundurkan diri atau Tasfiyah yang tidak lulus tingkat akhir, panitia hanya dapat mengembalikan biaya pendaftaran dengan rincian:",
+          "subtitle": "Item yang dapat dikembalikan:",
+          "items": {
+            "venue": "Biaya gedung",
+            "consumption": "Konsumsi",
+            "documentation": "Dokumentasi",
+            "folder": "Map Syukr wa Taqdir dan Paper Bag"
+          },
+          "note": "cat: Jadwal pengembalian uang akan diumumkan kemudian"
+        },
+        "attributePurchase": {
+          "title": "Pembelian Atribut",
+          "description": "Bagi yang hanya ingin membeli atribut wisuda, dapat memilih:",
+          "subtitle": "Pilihan atribut:",
+          "options": {
+            "complete": "Paket lengkap seluruh atribut wisuda, atau",
+            "sashPinMedal": "Salah satu dari dua pilihan berikut: Selendang, Pin, dan Medali (Sash, Pin, and Medal)",
+            "plaque": "Plakat (Plaque)"
+          },
+          "note": "Pembeli atribut wisuda wajib membayar setengah dari biaya administrasi Wisuda PPMI Mesir 2025, yaitu LE ……"
+        }
+      }
+    },
+    "footer": {
+      "note": "Pastikan untuk memahami semua persyaratan sebelum melakukan pendaftaran"
+    }
+  },
+  "FeeDetail": {
+    "sectionBadge": "Informasi Pendaftaran",
+    "sectionHeading": "Rincian Biaya Pendaftaran",
+    "sectionDescription": "Informasi lengkap mengenai biaya pendaftaran wisuda dan paket atribut yang tersedia",
+    "wisudaFeesTitle": "Rincian Biaya Pendaftaran Wisuda",
+    "total": "Total",
+    "atributFeesTitle": "Rincian Biaya Pendaftaran Atribut",
+    "popularBadge": "Paling Lengkap",
+    "quotaTitle": "Kuota Terbatas",
+    "quotaAmount": "HANYA 1.200 ORANG",
+    "quotaDescription": "Kuota pendaftaran wisuda terbatas, segera daftar untuk memastikan tempat Anda",
+    "wisudaFees": {
+      "SewaGedung": "Sewa Gedung",
+      "Prasarana": "Prasarana",
+      "Selempang": "Selempang",
+      "MedaliPin": "Medali dan Pin",
+      "Plakat": "Plakat",
+      "PaperBagMap": "Paper Bag dan Map",
+      "Konsumsi": "Konsumsi",
+      "Dokumentasi": "Dokumentasi",
+      "Administrasi": "Administrasi"
+    },
+    "atributPackages": {
+      "AtributLengkap": {
+        "name": "Atribut Lengkap",
+        "description": "Selempang, Medali & Pin, Plakat, dan Administrasi"
+      },
+      "AtributPaketA": {
+        "name": "Atribut Paket A",
+        "description": "Selempang, Medali & Pin, dan Administrasi"
+      },
+      "AtributPaketB": {
+        "name": "Atribut Paket B",
+        "description": "Plakat dan Administrasi"
+      }
+    }
+  },
   "FormPage": {
     "Page": {
       "Badge": "Formulir Resmi",

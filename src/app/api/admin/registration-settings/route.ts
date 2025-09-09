@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import payloadConfig from '../../../../../payload.config'
+import config from '@payload-config'
 
 export async function GET() {
   try {
-    const payload = await getPayload({ config: payloadConfig })
-    
+    const payload = await getPayload({ config })
+
     const settings = await payload.find({
       collection: 'registration-settings',
       sort: '-createdAt',
@@ -14,26 +14,23 @@ export async function GET() {
 
     return NextResponse.json({
       settings: settings.docs,
-      activeSettings: settings.docs.find(s => s.is_active) || null,
+      activeSettings: settings.docs.find((s) => s.is_active) || null,
     })
   } catch (error) {
     console.error('Error fetching registration settings:', error)
-    return NextResponse.json(
-      { error: 'Gagal mengambil pengaturan registrasi' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Gagal mengambil pengaturan registrasi' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: payloadConfig })
+    const payload = await getPayload({ config })
     const { maxRegistrants, description, is_active } = await request.json()
 
     if (typeof maxRegistrants !== 'number' || maxRegistrants < 0) {
       return NextResponse.json(
         { error: 'maxRegistrants harus berupa angka positif' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -102,27 +99,24 @@ export async function POST(request: NextRequest) {
     console.error('Error updating registration settings:', error)
     return NextResponse.json(
       { error: 'Gagal memperbarui pengaturan batas maksimal pendaftar' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: payloadConfig })
+    const payload = await getPayload({ config })
     const { id, maxRegistrants, description, is_active } = await request.json()
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'ID diperlukan untuk update' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'ID diperlukan untuk update' }, { status: 400 })
     }
 
     if (typeof maxRegistrants !== 'number' || maxRegistrants < 0) {
       return NextResponse.json(
         { error: 'maxRegistrants harus berupa angka positif' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -156,24 +150,18 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error updating registration settings:', error)
-    return NextResponse.json(
-      { error: 'Gagal memperbarui pengaturan' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Gagal memperbarui pengaturan' }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: payloadConfig })
+    const payload = await getPayload({ config })
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'ID diperlukan untuk hapus' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'ID diperlukan untuk hapus' }, { status: 400 })
     }
 
     await payload.delete({
@@ -186,9 +174,6 @@ export async function DELETE(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error deleting registration settings:', error)
-    return NextResponse.json(
-      { error: 'Gagal menghapus pengaturan' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Gagal menghapus pengaturan' }, { status: 500 })
   }
 }

@@ -7,8 +7,9 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 
 export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
-  title: 'Payload Blank Template',
+  description:
+    'Platform resmi pendaftaran Wisuda PPMI Mesir 2025. Dapatkan informasi terbaru dan proses pendaftaran wisuda dengan mudah, cepat, dan terpercaya. ',
+  title: 'Wisuda PPMI Mesir 2025',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

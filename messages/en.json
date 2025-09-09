@@ -42,6 +42,142 @@
   "Navbar": {
     "joinNow": "Join Now"
   },
+  "Requirements": {
+    "title": "Re-registration Requirements",
+    "subtitle": "Terms and conditions that must be met for PPMI Egypt 2025 graduation re-registration",
+    "reRegistration": {
+      "title": "Re-registration Requirements",
+      "description": "The following are mandatory requirements that must be met for re-registration:",
+      "items": {
+        "presence": {
+          "title": "Physical Presence",
+          "description": "Be physically present at the re-registration venue according to the specified schedule."
+        },
+        "qrCode": {
+          "title": "Online Registration Proof",
+          "description": "Bring proof of online registration in the form of a QR Code."
+        },
+        "payment": {
+          "title": "Fee Payment",
+          "description": "Settle the registration fee according to the graduation package selected by the participant."
+        }
+      }
+    },
+    "specific": {
+      "title": "Specific Requirements",
+      "description": "Special terms that apply during the registration process:",
+      "items": {
+        "formSchedule": {
+          "title": "Form Filling Schedule",
+          "description": "Applicants may complete the Online Registration Form Website daily from 09.00-15.00 WLK. After 15.00, the form will be closed and reopened at 09.00 the following day."
+        },
+        "representation": {
+          "title": "Representation",
+          "description": "The committee will not accept re-registration outside the specified schedule. Participants who are unable to attend may be represented. Each participant may represent a maximum of 3 other participants."
+        },
+        "quota": {
+          "title": "Quota Limit",
+          "description": "Registration will be closed once the quota is reached, even if the registration period is still ongoing."
+        },
+        "certificate": {
+          "title": "Certificate Requirements",
+          "description": "Applicants who have not yet processed their Certificate Graduation may submit their 4th-year Transcript Statement results."
+        },
+        "deadline": {
+          "title": "Grade Submission Deadline",
+          "description": "The deadline for submitting the General Grade (Taqdir 'Am) and Cumulative Score (tarakumi) for Tasfiyah applicants is October 10, 2025.",
+          "badge": "Important"
+        },
+        "consequences": {
+          "title": "Deadline Consequences",
+          "description": "After this deadline, applicants must accept the following consequences:",
+          "subItems": {
+            "listOrder": "They will be placed at the end of the graduation calling list",
+            "scoreDetermination": "The cumulative score will be determined at the committee's discretion"
+          }
+        },
+        "graduationConsequences": {
+          "title": "Non-graduation Consequences",
+          "description": "If an applicant is officially declared not graduated in the final level, then:",
+          "subItems": {
+            "noCeremony": "The participant is not entitled to participate in the ceremonial event of PPMI Egypt Graduation 2025",
+            "stillGetAttributes": "The participant is still entitled to graduation attributes, as the ordering process has been carried out since registration opened"
+          }
+        },
+        "withdrawalDeadline": {
+          "title": "Withdrawal Deadline",
+          "description": "The deadline for submitting a resignation request for prospective graduates who are declared not to have passed the final level is October 18, 2025.",
+          "badge": "Final"
+        },
+        "refund": {
+          "title": "Refund Policy",
+          "description": "For applicants who withdraw or tasfiyah who did not pass the final level, the committee can only refund the registration fee for the following items:",
+          "subtitle": "Refundable items:",
+          "items": {
+            "venue": "Venue cost",
+            "consumption": "Consumption",
+            "documentation": "Documentation",
+            "folder": "Folder and Paper Bag"
+          },
+          "note": "note: The refund schedule will be announced later"
+        },
+        "attributePurchase": {
+          "title": "Attribute Purchase",
+          "description": "Those who only wish to purchase graduation attributes may choose:",
+          "subtitle": "Attribute options:",
+          "options": {
+            "complete": "The complete graduation attribute package, or",
+            "sashPinMedal": "One of the following two options: Sash, Pin, and Medal",
+            "plaque": "Plaque"
+          },
+          "note": "Those purchasing graduation attributes are required to pay half of the administrative fee for the 2025 PPMI Egypt Graduation, which is LE ……"
+        }
+      }
+    },
+    "footer": {
+      "note": "Make sure to understand all requirements before proceeding with registration"
+    }
+  },
+  "FeeDetail": {
+    "sectionBadge": "Registration Info",
+    "sectionHeading": "Registration Fee Details",
+    "sectionDescription": "Complete information about graduation registration fees and available attribute packages",
+    "wisudaFeesTitle": "Graduation Registration Fee Details",
+    "total": "Total",
+    "atributFeesTitle": "Attribute Registration Fee Details",
+    "popularBadge": "Most Complete",
+    "quotaTitle": "Limited Quota",
+    "quotaAmount": "ONLY 1,200 PEOPLE",
+    "quotaDescription": "Graduation registration quota is limited, register now to secure your spot",
+    "wisudaFees": {
+      "SewaGedung": "Hall Rental",
+      "Prasarana": "Facilities",
+      "Selempang": "Sash",
+      "MedaliPin": "Medal and Pin",
+      "Plakat": "Plaque",
+      "PaperBagMap": "Paper Bag and Folder",
+      "Konsumsi": "Consumption",
+      "Dokumentasi": "Documentation",
+      "Administrasi": "Administration"
+    },
+    "atributPackages": {
+      "AtributLengkap": {
+        "name": "Complete Attribute",
+        "description": "Sash, Medal & Pin, Plaque, and Administration"
+      },
+      "AtributPaketA": {
+        "name": "Attribute Package A",
+        "description": "Sash, Medal & Pin, and Administration"
+      },
+      "AtributPaketB": {
+        "name": "Attribute Package B",
+        "description": "Plaque and Administration"
+      }
+    }
+  },
+  "Navbar": {
+    "joinNow": "Join Now"
+  },
   "FormPage": {
     "Page": {
       "Badge": "Official Form",
