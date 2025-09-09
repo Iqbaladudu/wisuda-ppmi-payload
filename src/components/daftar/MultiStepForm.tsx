@@ -174,36 +174,34 @@ const MultiStepForm: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full">
+    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full">
       <StepSidebar currentStep={currentStep} steps={stepsData} />
-      <div className="flex-1">
-        <Card className="border-white/10 bg-white/90 backdrop-blur-xl relative overflow-hidden shadow-2xl">
+      <div className="flex-1 w-full">
+        <div className="w-full border border-white/10 bg-white/90 backdrop-blur-xl relative overflow-hidden shadow-2xl rounded-lg">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,#F5D3CA_0%,transparent_60%)] opacity-70" />
-          <CardHeader className="relative">
-            <CardTitle className="text-[#3E2522] text-xl font-bold tracking-wide flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-[#3E2522] to-[#5A3A2F] text-[#FCEFEA] text-sm font-semibold shadow">
+          <div className="relative p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-[#3E2522] to-[#5A3A2F] text-[#FCEFEA] text-sm font-semibold shadow flex-shrink-0">
                 {currentStep + 1}
               </span>
-              {stepsData[currentStep].title}
-            </CardTitle>
-            <p className="text-xs md:text-sm text-[#3E2522]/70 max-w-prose leading-relaxed">
+              <h3 className="text-[#3E2522] text-lg md:text-xl font-bold tracking-wide flex-1">
+                {stepsData[currentStep].title}
+              </h3>
+            </div>
+            <p className="text-xs md:text-sm text-[#3E2522]/70 max-w-prose leading-relaxed mb-4">
               {stepsData[currentStep].description}
             </p>
             <Progress
               value={((currentStep + 1) / stepsData.length) * 100}
-              className="w-full h-2 overflow-hidden bg-gradient-to-r from-[#3E2522]/15 to-[#5A3A2F]/15"
+              className="w-full h-2 overflow-hidden bg-gradient-to-r from-[#3E2522]/15 to-[#5A3A2F]/15 mb-6"
             />
-          </CardHeader>
-          <CardContent className="relative">
             {/* @ts-ignore - suppress generic variance mismatch */}
             <AnyForm {...form}>
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-                <div className="rounded-lg ring-1 ring-[#3E2522]/10 bg-white/60 shadow-inner p-1">
-                  <div className="rounded-md overflow-hidden">
-                    <StepContent currentStep={currentStep} form={form} />
-                  </div>
+                <div className="bg-white/70 rounded-lg p-2 sm:p-3">
+                  <StepContent currentStep={currentStep} form={form} />
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -214,13 +212,13 @@ const MultiStepForm: React.FC = () => {
                         toast.info(t('Messages.PreviousStep'))
                       }}
                       disabled={currentStep === 0 || isValidating || isSubmitting}
-                      className="min-w-[130px]"
+                      className="min-w-[120px] sm:min-w-[130px] w-full sm:w-auto"
                     >
                       {t('Buttons.Previous')}
                     </Button>
                   </div>
                   {currentStep < stepsData.length - 1 ? (
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                       <Button
                         type="button"
                         onClick={() => {
@@ -232,7 +230,7 @@ const MultiStepForm: React.FC = () => {
                           toast.success(t('Messages.NextStep'))
                         }}
                         disabled={isValidating || isSubmitting || hasCurrentStepErrors()}
-                        className="min-w-[150px] bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
+                        className="min-w-[140px] sm:min-w-[150px] w-full sm:w-auto bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
                       >
                         {isValidating ? t('Buttons.Validating') : t('Buttons.Next')}
                       </Button>
@@ -254,7 +252,7 @@ const MultiStepForm: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                       <Button
                         type="button"
                         onClick={async () => {
@@ -269,7 +267,7 @@ const MultiStepForm: React.FC = () => {
                           await onSubmit(data)
                         }}
                         disabled={isValidating || isSubmitting || hasCurrentStepErrors()}
-                        className="min-w-[160px] bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
+                        className="min-w-[150px] sm:min-w-[160px] w-full sm:w-auto bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"
                       >
                         {isSubmitting ? t('Buttons.Submitting') : t('Buttons.Submit')}
                       </Button>
@@ -294,8 +292,8 @@ const MultiStepForm: React.FC = () => {
                 </div>
               </form>
             </AnyForm>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   )

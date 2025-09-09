@@ -146,22 +146,6 @@ export const formSchema = z
   )
   .refine(
     (data) => {
-      const code = countryPhoneCodes[data.nationality]
-      // Enforce country code only if user already starts with a plus sign
-      if (
-        code &&
-        data.whatsapp &&
-        data.whatsapp.startsWith('+') &&
-        !data.whatsapp.startsWith(code)
-      ) {
-        return false
-      }
-      return true
-    },
-    { message: 'Errors.WhatsAppRequired', path: ['whatsapp'] },
-  )
-  .refine(
-    (data) => {
       if (data.education_level === 'S1') {
         if (!data.continuing_study) return false
         if (data.continuing_study === 'YES') {

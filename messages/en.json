@@ -234,7 +234,7 @@
         "Nationality": "Example: Indonesia, Malaysia, etc.",
         "PassportNumber": "Example: A12345678",
         "PhoneNumber": "Example: 08123456789",
-        "WhatsApp": "Example: +6281364791810",
+        "WhatsApp": "Example: +628123456789",
         "University": "Example: Al-Azhar University"
       },
       "Options": {
@@ -363,6 +363,7 @@
       "NationalityRequired": "Nationality is required",
       "WhatsAppRequired": "WhatsApp is required",
       "WhatsAppInvalid": "WhatsApp number is invalid",
+      "WhatsAppCountryCodeMismatch": "WhatsApp country code does not match nationality",
       "YearInvalid": "Invalid year",
       "QuranMemorizationRange": "Quran memorization 0-30 juz",
       "ScoreRange": "Score 0-100",

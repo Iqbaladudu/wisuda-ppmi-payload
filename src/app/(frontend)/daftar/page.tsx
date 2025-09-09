@@ -60,7 +60,7 @@ export default async function DaftarPage() {
           <p className="mb-10 max-w-2xl text-sm md:text-base leading-relaxed text-[#FCEFEA]/75">
             {t('Page.Description')}
           </p>
-          <div className="relative z-10 rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8 backdrop-blur-md shadow-[0_4px_30px_-5px_rgba(0,0,0,0.45)] ring-1 ring-white/5">
+          <div className="relative z-10 w-full p-4 md:p-6 lg:p-8">
             <MultiStepForm />
           </div>
         </div>

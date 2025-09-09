@@ -235,7 +235,7 @@ export interface Registrant {
   photo: string | ProfilePhoto;
   terms_agreement: boolean;
   /**
-   * Otomatis di-generate berdasarkan ID database
+   * Otomatis di-generate saat pendaftaran, format: 1-{registrant_type}-{name} (tetap/tidak berubah)
    */
   reg_id?: string | null;
   /**

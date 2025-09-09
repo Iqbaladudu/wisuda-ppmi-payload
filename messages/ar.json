@@ -223,7 +223,7 @@
         "Nationality": "مثال: إندونيسيا، ماليزيا...",
         "PassportNumber": "مثال: A12345678",
         "PhoneNumber": "مثال: 08123456789",
-        "WhatsApp": "مثال: +6281364791810"
+        "WhatsApp": "مثال: +628123456789"
       },
       "Options": {
         "RegistrantType": {
@@ -352,6 +352,7 @@
       "NationalityRequired": "الجنسية مطلوبة",
       "WhatsAppRequired": "رقم الواتساب مطلوب",
       "WhatsAppInvalid": "رقم الواتساب غير صالح",
+      "WhatsAppCountryCodeMismatch": "رمز دولة الواتساب لا يتطابق مع الجنسية",
 
       "YearInvalid": "سنة غير صالحة",
       "QuranMemorizationRange": "الحفظ 0-30 جزء",

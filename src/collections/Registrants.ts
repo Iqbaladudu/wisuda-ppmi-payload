@@ -490,7 +490,7 @@ export const Registrants: CollectionConfig = {
       type: 'text',
       name: 'reg_id',
       label: 'ID Registrasi',
-      admin: { readOnly: true, description: 'Otomatis di-generate berdasarkan ID database' },
+      admin: { readOnly: true, description: 'Otomatis di-generate saat pendaftaran, format: 1-{registrant_type}-{name} (tetap/tidak berubah)' },
       defaultValue: '',
     },
     {
@@ -541,9 +541,8 @@ export const Registrants: CollectionConfig = {
           } else {
             try {
               const payload = req.payload
-              const baseId = doc.id?.toString?.() || `${Date.now()}`
-              const regId =
-                doc.reg_id || `REG_${baseId.replace(/-/g, '').toUpperCase().slice(0, 8)}`
+              // Use existing reg_id or generate fallback
+              const regId = doc.reg_id || `REG_${doc.id?.toString().replace(/-/g, '').toUpperCase().slice(0, 8) || Date.now().toString().slice(0, 8)}`
 
               // 1. Ambil template PDF
               const templateUrl =
@@ -640,7 +639,7 @@ export const Registrants: CollectionConfig = {
               form.flatten()
 
               // 5. Generate QR code dengan data teks
-              const qrText = `Nama: ${doc.name}\nNama Arab: ${doc.name_arabic}\nJenis Kelamin: ${doc.gender === 'L' ? 'Laki-laki' : doc.gender === 'P' ? 'Perempuan' : ''}\nEmail: ${doc.email}\nKekeluargaan: ${doc.kekeluargaan}\nNomor Paspor: ${doc.passport_number}\nWhatsApp: ${doc.whatsapp}`
+              const qrText = `${doc.req_id}`
               let pdfBytes = await drawQRCodeOnPDF(
                 await pdfDoc.save(),
                 qrText,
@@ -654,7 +653,8 @@ export const Registrants: CollectionConfig = {
                   // Ambil data gambar syahadah dari collection
                   const syahadahDoc = await payload.findByID({
                     collection: 'syahadah',
-                    id: doc.syahadah_photo,
+
+                    id: doc.syahadah_photo.id || doc.syahadah_photo,
                   })
 
                   if (syahadahDoc && syahadahDoc.filename) {
@@ -718,7 +718,10 @@ export const Registrants: CollectionConfig = {
                 await req.payload.update({
                   collection: 'registrants',
                   id: doc.id,
-                  data: { confirmation_pdf: pdfId },
+                  data: { 
+                    confirmation_pdf: pdfId,
+                    reg_id: regId
+                  },
                   context: { skipPdf: true }, // HINDARI regenerasi
                   depth: 0,
                 })
@@ -766,6 +769,50 @@ export const Registrants: CollectionConfig = {
         // Check max registrants limit only for create operation
         if (operation === 'create') {
           await validateMaxRegistrants(req)
+          
+          // Generate reg_id for new registrants
+          if (!d.reg_id && d.registrant_type && d.name) {
+            try {
+              // Get all registrants with the same type to determine sequence number
+              const sameTypeRegistrants = await req.payload.find({
+                collection: 'registrants',
+                where: {
+                  registrant_type: { equals: d.registrant_type },
+                },
+                sort: '-createdAt',
+                limit: 1000,
+              })
+              
+              // Find the highest sequence number for this registrant type
+              let sequenceNumber = 1
+              for (const registrant of sameTypeRegistrants.docs) {
+                if (registrant.reg_id && registrant.reg_id.includes(`-${registrant.registrant_type}-`)) {
+                  const match = registrant.reg_id.match(/^(\d+)-/)
+                  if (match) {
+                    const existingSequence = parseInt(match[1])
+                    if (existingSequence >= sequenceNumber) {
+                      sequenceNumber = existingSequence + 1
+                    }
+                  }
+                }
+              }
+              
+              // Create safe name format
+              const safeName = d.name
+                .split('')
+                .filter((c) => /[A-Za-z0-9 _-]/.test(c))
+                .join('')
+                .trim()
+                .replace(/\s+/g, '_')
+                .toUpperCase()
+              
+              d.reg_id = `${sequenceNumber}-${d.registrant_type}-${safeName}`
+            } catch (error) {
+              // Fallback to original format if there's an error
+              const baseId = `${Date.now()}`
+              d.reg_id = `REG_${baseId.replace(/-/g, '').toUpperCase().slice(0, 8)}`
+            }
+          }
         }
 
         // Compute study_duration
@@ -797,9 +844,10 @@ export const Registrants: CollectionConfig = {
     ],
     afterRead: [
       async ({ doc }) => {
-        // Generate reg_id dynamically when reading the document
-        if (doc.id) {
-          const id = doc.id.toString()
+        // Only generate reg_id if it doesn't exist (for backward compatibility)
+        if (!doc.reg_id && doc.registrant_type && doc.name) {
+          // Fallback to original format if reg_id is missing
+          const id = doc.id?.toString() || `${Date.now()}`
           const compact = id.replace(/-/g, '').toUpperCase()
           doc.reg_id = `REG_${compact.slice(0, 8)}`
         }
