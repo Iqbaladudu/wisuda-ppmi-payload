@@ -19,9 +19,6 @@ interface HeroAlternativeProps {
   onRegisterClick?: () => void
   onGuideClick?: () => void
   className?: string
-  currentRegistrants?: number
-  targetRegistrants?: number
-  extraStats?: HeroStat[]
 }
 
 // CountUp component (restored)
@@ -69,16 +66,6 @@ const CountUp: React.FC<{ target: number; suffix?: string; delay?: number; durat
   )
 }
 
-// Base stats configuration (bisa dikembangkan nanti dari data real)
-const BASE_STATS: HeroStat[] = [
-  { label: 'Wisudawan Target', value: 120, suffix: '+' },
-  { label: 'Fakultas', value: 5, suffix: '+' },
-  { label: 'Negara Hadir', value: 10, suffix: '+' },
-  { label: 'Dokumentasi', value: 1000, suffix: '+' },
-  { label: 'Sesi Utama', value: 3 },
-  { label: 'Panel Diskusi', value: 2 },
-  { label: 'Tahun Penyelenggaraan', value: 2025 },
-]
 
 // Decorative shape component
 const FloatingShape: React.FC<{
@@ -181,35 +168,12 @@ const CountdownTimer: React.FC<{ targetDate: Date | null }> = ({ targetDate }) =
   )
 }
 
-// Lazy load stats heavy section (no SSR) so hero paints instantly
-const LazyHeroStatsSection = dynamic(
-  () => import('./HeroStatsSection').then((m) => m.HeroStatsSection),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="w-full max-w-6xl mx-auto flex flex-col items-center gap-12"
-        aria-label="Memuat statistik"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full animate-pulse opacity-70">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-xl border border-white/10 bg-white/[0.06]" />
-          ))}
-        </div>
-        <div className="w-full h-40 rounded-2xl border border-white/10 bg-white/[0.04] animate-pulse" />
-      </div>
-    ),
-  },
-)
 
 export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
   date,
   onGuideClick,
   onRegisterClick,
   className,
-  currentRegistrants,
-  targetRegistrants,
-  extraStats = [],
 }) => {
   const ceremonyDate = date ? new Date(date) : null
   const dayFormatted = ceremonyDate?.toLocaleDateString('id-ID', {
@@ -218,120 +182,114 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
     year: 'numeric',
   })
 
-  // Derive dynamic stats
-  const derived: HeroStat[] = []
-  if (typeof currentRegistrants === 'number' && typeof targetRegistrants === 'number') {
-    derived.push({ label: 'Pendaftar Saat Ini', value: currentRegistrants })
-    const remaining = Math.max(0, targetRegistrants - currentRegistrants)
-    derived.push({ label: 'Kuota Tersisa', value: remaining })
-  }
-
-  const allStats: HeroStat[] = [...BASE_STATS, ...derived, ...extraStats]
-  // Ensure uniqueness by label (last wins)
-  const statMap = new Map<string, HeroStat>()
-  allStats.forEach((s) => statMap.set(s.label, s))
-  const finalStats = Array.from(statMap.values())
-
-  const totalTarget =
-    targetRegistrants ?? BASE_STATS.find((s) => s.label === 'Wisudawan Target')?.value ?? 0
-  const progressPercent = totalTarget
-    ? Math.min(100, Math.round(((currentRegistrants ?? 0) / totalTarget) * 100))
-    : 0
-
   return (
     <section
       className={cn(
         'relative isolate overflow-hidden text-white',
-        'py-28 md:py-40',
+        'py-32 md:py-48 lg:py-56 min-h-screen',
         // solid base color
         'before:absolute before:inset-0 before:-z-30 before:bg-[#140A08]',
-        // subtle top-left radial warmth
-        'after:absolute after:inset-0 after:-z-20 after:bg-[radial-gradient(circle_at_28%_30%,rgba(230,140,90,0.18),transparent_70%)]',
+        // centered radial warmth
+        'after:absolute after:inset-0 after:-z-20 after:bg-[radial-gradient(circle_at_50%_50%,rgba(230,140,90,0.15),transparent_65%)]',
         className,
       )}
       aria-labelledby="hero-alt-heading"
     >
       {/* Glows & shapes */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* Radial glows */}
-        <div className="absolute -top-40 -left-36 h-[540px] w-[540px] rounded-full bg-gradient-to-br from-white via-[#D97A47]/25 to-transparent blur-3xl opacity-80" />
-        <div className="absolute top-1/4 -right-40 h-[600px] w-[600px] rounded-full bg-gradient-to-tr from-[#E07C45]/40 via-[#B8451A]/25 to-transparent blur-3xl" />
+        {/* Symmetric radial glows */}
+        <div className="absolute -top-32 -left-32 h-[480px] w-[480px] rounded-full bg-gradient-to-br from-white via-[#D97A47]/25 to-transparent blur-3xl opacity-80" />
+        <div className="absolute -top-32 -right-32 h-[480px] w-[480px] rounded-full bg-gradient-to-bl from-white via-[#D97A47]/25 to-transparent blur-3xl opacity-80" />
+        <div className="absolute top-1/3 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-[#E07C45]/40 via-[#B8451A]/25 to-transparent blur-3xl" />
+        <div className="absolute top-1/3 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-tl from-[#E07C45]/40 via-[#B8451A]/25 to-transparent blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-72 w-[110%] -translate-x-1/2 rounded-t-[55%] bg-gradient-to-t from-[#0E0605] to-transparent" />
-        {/* Large grid (big cells) + mask + sheen */}
+        {/* Symmetric grid pattern */}
         <svg
-          className="absolute inset-0 w-full h-full opacity-[0.22]"
+          className="absolute inset-0 w-full h-full opacity-[0.18]"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <pattern id="heroGrid" width="160" height="160" patternUnits="userSpaceOnUse">
+            <pattern id="heroGrid" width="120" height="120" patternUnits="userSpaceOnUse" patternTransform="translate(0,0)">
               <rect
                 x="0"
                 y="0"
-                width="160"
-                height="160"
+                width="120"
+                height="120"
                 fill="none"
-                stroke="rgba(255,255,255,0.085)"
-                strokeWidth="1"
+                stroke="rgba(255,255,255,0.07)"
+                strokeWidth="0.8"
               />
               <path
-                d="M80 0 L80 160 M0 80 L160 80"
-                stroke="rgba(255,255,255,0.06)"
-                strokeWidth="0.6"
-              />
-              <path
-                d="M40 0 L40 160 M120 0 L120 160 M0 40 L160 40 M0 120 L160 120"
-                stroke="rgba(255,255,255,0.04)"
+                d="M60 0 L60 120 M0 60 L120 60"
+                stroke="rgba(255,255,255,0.05)"
                 strokeWidth="0.5"
               />
+              <path
+                d="M30 0 L30 120 M90 0 L90 120 M0 30 L120 30 M0 90 L120 90"
+                stroke="rgba(255,255,255,0.03)"
+                strokeWidth="0.4"
+              />
             </pattern>
-            <radialGradient id="gridFade" cx="35%" cy="30%" r="90%">
-              <stop offset="0%" stopColor="white" />
-              <stop offset="60%" stopColor="white" />
-              <stop offset="100%" stopColor="black" />
+            <radialGradient id="gridFade" cx="50%" cy="50%" r="70%">
+              <stop offset="0%" stopColor="white" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="white" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="black" stopOpacity="0.9" />
             </radialGradient>
             <mask id="gridMask">
               <rect width="100%" height="100%" fill="url(#gridFade)" />
             </mask>
             <linearGradient id="gridSheen" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
-              <stop offset="35%" stopColor="rgba(255,255,255,0.05)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
+              <stop offset="50%" stopColor="rgba(255,255,255,0.04)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </linearGradient>
           </defs>
           <rect width="100%" height="100%" fill="url(#heroGrid)" mask="url(#gridMask)" />
           <rect width="100%" height="100%" fill="url(#gridSheen)" mask="url(#gridMask)" />
         </svg>
-        {/* Spotlight overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_32%,rgba(255,195,150,0.25),transparent_70%)] mix-blend-screen" />
+        {/* Centered spotlight overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,195,150,0.22),transparent_60%)] mix-blend-screen" />
         {/* Bottom connector gradient */}
         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-b from-transparent via-[#140A08]/70 to-[#0A0605]" />
       </div>
 
-      {/* Floating decorative motion shapes */}
+      {/* Symmetric floating decorative motion shapes */}
       <FloatingShape
-        className="top-24 left-10 h-20 w-20 bg-gradient-to-br from-[#FFCDB8]/50 to-[#955437]/40 blur-xl"
+        className="top-24 left-16 h-20 w-20 bg-gradient-to-br from-[#FFCDB8]/60 to-[#955437]/45 blur-xl"
         delay={0.3}
         duration={14}
+        scale={1.3}
+      />
+      <FloatingShape
+        className="top-24 right-16 h-20 w-20 bg-gradient-to-bl from-[#FFCDB8]/60 to-[#955437]/45 blur-xl"
+        delay={0.3}
+        duration={14}
+        scale={1.3}
+      />
+      <FloatingShape
+        className="bottom-32 left-20 h-24 w-24 bg-gradient-to-tr from-[#E07C45]/60 to-[#F5B296]/40 blur-2xl"
+        delay={0.8}
+        duration={18}
         scale={1.4}
       />
       <FloatingShape
-        className="bottom-32 right-16 h-24 w-24 bg-gradient-to-tr from-[#E07C45]/55 to-[#F5B296]/35 blur-2xl"
-        delay={1}
+        className="bottom-32 right-20 h-24 w-24 bg-gradient-to-tl from-[#E07C45]/60 to-[#F5B296]/40 blur-2xl"
+        delay={0.8}
         duration={18}
-        scale={1.5}
+        scale={1.4}
       />
       <FloatingShape
-        className="top-1/2 left-1/3 h-10 w-10 bg-gradient-to-tr from-white/30 to-transparent"
-        delay={0.6}
-        duration={12}
+        className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-14 w-14 bg-gradient-to-br from-white/40 to-transparent blur-lg"
+        delay={0.5}
+        duration={16}
         scale={1.2}
       />
 
-      <div className="mx-auto max-w-7xl px-5 md:px-8 relative">
-        <div className="flex flex-col items-center text-center gap-16">
+      <div className="mx-auto max-w-6xl px-6 md:px-8 lg:px-12 relative">
+        <div className="flex flex-col items-center text-center gap-24 min-h-[80vh] justify-center">
           {/* Headline Block */}
           <motion.div
-            className="space-y-7 max-w-4xl"
+            className="space-y-12 max-w-5xl mx-auto"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.6 }}
@@ -344,13 +302,22 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               },
             }}
           >
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[11px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              Pendaftaran Wisuda <span className="text-white/65">2025</span>
-            </div>
+            {/* Status Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-flex items-center gap-3 rounded-full bg-white/10 px-8 py-3 text-[13px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur-sm border border-white/10 shadow-lg"
+            >
+              <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-400" />
+              Pendaftaran Wisuda <span className="text-white/70 font-semibold">2025</span>
+            </motion.div>
+
+            {/* Main Title with Enhanced Animation */}
             <motion.h1
               id="hero-alt-heading"
-              className="font-extrabold tracking-tight text-4xl leading-[1.05] md:text-6xl lg:text-7xl drop-shadow-md"
+              className="font-extrabold tracking-tight text-5xl leading-[1.05] md:text-7xl lg:text-8xl drop-shadow-lg"
             >
               {'Convocation Ceremony PPMI Mesir 2025'.split(' ').map((w, i) => (
                 <motion.span
@@ -372,36 +339,57 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
                 </motion.span>
               ))}
             </motion.h1>
-            <CountdownTimer targetDate={ceremonyDate} />
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+
+            {/* Enhanced Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed font-normal px-4"
+            >
+              Bergabunglah dalam momen bersejarah perayaan prestasi akademik di tanah suci Mesir
+            </motion.p>
+
+            {/* Countdown Timer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="w-full max-w-2xl mx-auto"
+            >
+              <CountdownTimer targetDate={ceremonyDate} />
+            </motion.div>
+
+            {/* Enhanced CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="flex flex-wrap items-center justify-center gap-8 pt-4 w-full max-w-2xl mx-auto"
+            >
               <Button
                 onClick={onRegisterClick}
-                className="group relative overflow-hidden rounded-xl px-7 py-5 text-sm font-semibold tracking-wide shadow-lg shadow-black/30"
+                className="group relative overflow-hidden rounded-xl px-10 py-5 text-base font-semibold tracking-wide shadow-xl shadow-black/40 hover:shadow-2xl transition-all duration-300 hover:scale-105"
               >
                 <span className="absolute inset-0 -z-10 bg-gradient-to-r from-[#E07C45] via-[#D66837] to-[#B8451A]" />
                 <span className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition backdrop-blur-[2px] bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.3),transparent_60%)]" />
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-3">
                   Gabung Sekarang{' '}
-                  <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
+                  <ArrowRight size={18} className="transition group-hover:translate-x-1" />
                 </span>
               </Button>
               <Button
                 variant="outline"
                 onClick={onGuideClick}
-                className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white rounded-xl backdrop-blur shadow-lg shadow-black/20"
+                className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white rounded-xl backdrop-blur shadow-xl shadow-black/30 hover:shadow-2xl transition-all duration-300 hover:scale-105 px-10 py-5 text-base"
               >
-                <Play size={15} className="mr-1" /> Panduan
+                <Play size={16} className="mr-2" /> Panduan
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
-
-          {/* Stats Section (lazy) */}
-          <LazyHeroStatsSection
-            stats={finalStats}
-            progressPercent={progressPercent}
-            currentRegistrants={currentRegistrants}
-            targetRegistrants={targetRegistrants}
-          />
         </div>
       </div>
     </section>

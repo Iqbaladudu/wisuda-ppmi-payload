@@ -45,6 +45,14 @@ export const YearlyStats = () => {
   })
 
   const [mode, setMode] = React.useState<ChartMode>('bar')
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const stats = React.useMemo(() => {
     const ordered = [...statsRaw].sort((a, b) => a.year - b.year)
@@ -111,7 +119,7 @@ export const YearlyStats = () => {
 
   return (
     <SectionBG ariaLabelledBy="yearly-stats-heading" variant="withGrid">
-      <div className="mx-auto max-w-6xl px-4 relative">
+      <div className="mx-auto max-w-6xl px-4 relative ">
         <Header />
 
         {/* KPI Cards */}
@@ -138,8 +146,8 @@ export const YearlyStats = () => {
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#E07C45]/25 via-[#B8451A]/10 to-transparent blur-2xl opacity-50 pointer-events-none" />
           <div className="relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-4 md:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08),transparent_60%)]" />
-            <div className="relative flex items-center justify-between gap-4 flex-wrap">
-              <div>
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
                 <h3
                   id="yearly-stats-heading"
                   className="text-sm font-semibold tracking-wide text-[#FCEFEA]/80 uppercase"
@@ -150,11 +158,12 @@ export const YearlyStats = () => {
                   Visualisasi tren wisudawan dan persentase pertumbuhan setiap tahun.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <ModeButton
                   active={mode === 'bar'}
                   onClick={() => setMode('bar')}
                   icon={<BarChart2 className="h-3.5 w-3.5" />}
+                  className="flex-1 sm:flex-none"
                 >
                   Bar
                 </ModeButton>
@@ -162,84 +171,132 @@ export const YearlyStats = () => {
                   active={mode === 'line'}
                   onClick={() => setMode('line')}
                   icon={<TrendingUp className="h-3.5 w-3.5" />}
+                  className="flex-1 sm:flex-none"
                 >
                   Line
                 </ModeButton>
               </div>
             </div>
-            <div className="relative mt-6 h-[360px]">
-              <ChartContainer config={chartConfig} className="aspect-[16/7]">
+            <div className="relative mt-6">
+              <ChartContainer 
+                config={chartConfig} 
+                className={`w-full ${isMobile ? 'h-[280px]' : 'h-[360px]'}`}
+              >
                 {mode === 'bar' ? (
-                  <BarChart data={stats} margin={{ left: 8, right: 8, top: 20 }}>
+                  <BarChart 
+                    data={stats} 
+                    margin={{
+                      left: isMobile ? 4 : 8, 
+                      right: isMobile ? 4 : 8, 
+                      top: 20, 
+                      bottom: isMobile ? 60 : 40
+                    }}
+                  >
                     <defs>
                       <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#FCEFEA" stopOpacity={0.9} />
-                        <stop offset="80%" stopColor="#E07C45" stopOpacity={0.2} />
+                        <stop offset="0%" stopColor="#FCEFEA" stopOpacity={1} />
+                        <stop offset="80%" stopColor="#E07C45" stopOpacity={0.8} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="rgba(255,255,255,0.1)"
+                      stroke="rgba(255,255,255,0.2)"
                     />
                     <XAxis
                       dataKey="year"
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: 'rgba(255,255,255,.55)', fontSize: 12 }}
+                      tick={{ 
+                        fill: 'rgba(255,255,255,.9)', 
+                        fontSize: isMobile ? 11 : 14, 
+                        fontWeight: 600 
+                      }}
+                      tickMargin={isMobile ? 15 : 20}
+                      height={isMobile ? 70 : 50}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? 'end' : 'middle'}
+                      interval={isMobile ? 1 : 0}
+                      scale="point"
+                      padding={{ 
+                        left: isMobile ? 10 : 20, 
+                        right: isMobile ? 10 : 20 
+                      }}
                     />
                     <YAxis hide domain={[0, Math.ceil(max * 1.15)]} />
                     <Tooltip
-                      cursor={{ fill: 'rgba(255,255,255,0.06)' }}
+                      cursor={{ fill: 'rgba(255,255,255,0.12)' }}
                       content={<ChartTooltipContent />}
                       formatter={(value: any, name: any, item: any) => [value, 'Wisudawan']}
                     />
                     <ReferenceLine
                       y={totals.avg}
-                      stroke="#ffffff33"
+                      stroke="#ffffff66"
                       strokeDasharray="4 4"
                       label={{
                         value: 'Rata2',
                         position: 'right',
-                        fill: 'rgba(255,255,255,.5)',
+                        fill: 'rgba(255,255,255,.75)',
                         fontSize: 10,
                       }}
                     />
                     <Bar dataKey="total" fill="url(#barFill)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 ) : (
-                  <LineChart data={stats} margin={{ left: 8, right: 8, top: 20 }}>
+                  <LineChart 
+                    data={stats} 
+                    margin={{
+                      left: isMobile ? 4 : 8, 
+                      right: isMobile ? 4 : 8, 
+                      top: 20, 
+                      bottom: isMobile ? 60 : 40
+                    }}
+                  >
                     <defs>
                       <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#E07C45" stopOpacity={0.4} />
-                        <stop offset="90%" stopColor="#B8451A" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#E07C45" stopOpacity={0.8} />
+                        <stop offset="90%" stopColor="#B8451A" stopOpacity={0.3} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="rgba(255,255,255,0.1)"
+                      stroke="rgba(255,255,255,0.2)"
                     />
                     <XAxis
                       dataKey="year"
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: 'rgba(255,255,255,.55)', fontSize: 12 }}
+                      tick={{ 
+                        fill: 'rgba(255,255,255,.9)', 
+                        fontSize: isMobile ? 11 : 14, 
+                        fontWeight: 600 
+                      }}
+                      tickMargin={isMobile ? 15 : 20}
+                      height={isMobile ? 70 : 50}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? 'end' : 'middle'}
+                      interval={isMobile ? 1 : 0}
+                      scale="point"
+                      padding={{ 
+                        left: isMobile ? 10 : 20, 
+                        right: isMobile ? 10 : 20 
+                      }}
                     />
                     <YAxis hide domain={[0, Math.ceil(max * 1.15)]} />
                     <Tooltip
-                      cursor={{ stroke: 'rgba(255,255,255,0.4)' }}
+                      cursor={{ stroke: 'rgba(255,255,255,0.6)' }}
                       content={<ChartTooltipContent />}
                       formatter={(value: any) => [value, 'Wisudawan']}
                     />
                     <ReferenceLine
                       y={totals.avg}
-                      stroke="#ffffff33"
+                      stroke="#ffffff66"
                       strokeDasharray="4 4"
                       label={{
                         value: 'Rata2',
                         position: 'right',
-                        fill: 'rgba(255,255,255,.5)',
+                        fill: 'rgba(255,255,255,.75)',
                         fontSize: 10,
                       }}
                     />
@@ -247,7 +304,7 @@ export const YearlyStats = () => {
                       type="monotone"
                       dataKey="total"
                       stroke="#E07C45"
-                      strokeWidth={2}
+                      strokeWidth={3}
                       dot={{ r: 3, stroke: '#fff', strokeWidth: 1 }}
                       activeDot={{ r: 5 }}
                       fill="url(#lineFill)"
@@ -255,30 +312,6 @@ export const YearlyStats = () => {
                   </LineChart>
                 )}
               </ChartContainer>
-            </div>
-            {/* Growth Badges overlay */}
-            <div className="relative mt-4 flex flex-wrap gap-2 text-[10px] md:text-[11px]">
-              {stats.map((s) => (
-                <span
-                  key={s.year}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2 py-1 backdrop-blur-md',
-                    s.growth && s.growth > 0
-                      ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
-                      : s.growth && s.growth < 0
-                        ? 'border-rose-400/30 bg-rose-400/10 text-rose-200'
-                        : 'border-white/15 bg-white/5 text-white/70',
-                  )}
-                >
-                  <span className="font-semibold tabular-nums">{s.year}</span>
-                  {s.growth !== null && (
-                    <span className="font-mono">
-                      {s.growth > 0 ? '+' : ''}
-                      {s.growth.toFixed(1)}%
-                    </span>
-                  )}
-                </span>
-              ))}
             </div>
           </div>
         </div>
@@ -323,9 +356,9 @@ function MetricCard({
           <span
             className={cn(
               'mt-0.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-md border',
-              isPositive && 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30',
-              isNegative && 'bg-rose-400/10 text-rose-300 border-rose-400/30',
-              !isPositive && !isNegative && 'bg-white/5 text-white/60 border-white/15',
+              isPositive && 'bg-emerald-400/20 text-emerald-200 border-emerald-400/50',
+              isNegative && 'bg-rose-400/20 text-rose-200 border-rose-400/50',
+              !isPositive && !isNegative && 'bg-white/10 text-white/75 border-white/25',
             )}
           >
             {diff > 0 ? '+' : ''}
@@ -345,11 +378,13 @@ function ModeButton({
   onClick,
   icon,
   children,
+  className,
 }: {
   active: boolean
   onClick: () => void
   icon: React.ReactNode
   children: React.ReactNode
+  className?: string
 }) {
   return (
     <Button
@@ -362,6 +397,7 @@ function ModeButton({
         active
           ? 'bg-gradient-to-r from-[#E07C45] to-[#B8451A] text-white border-transparent shadow'
           : 'bg-white/5 border-white/15 text-white/70 hover:text-white',
+        className
       )}
     >
       <span className="mr-1.5 inline-flex items-center justify-center">{icon}</span>

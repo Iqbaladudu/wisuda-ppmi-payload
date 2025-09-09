@@ -18,44 +18,20 @@ export async function GET() {
       if (!isNaN(y)) map[y] = (map[y] || 0) + 1
     }
 
-    // Build base stats from DB
-    let stats = Object.entries(map)
-      .map(([y, total]) => ({ year: Number(y), total }))
-      .sort((a, b) => a.year - b.year)
+    // Hardcoded graduation statistics data
+    const hardcodedData = [
+      { year: 2020, total: 170 },
+      { year: 2021, total: 379 },
+      { year: 2022, total: 886 },
+      { year: 2023, total: 1093 },
+      { year: 2024, total: 1160 },
+    ]
 
-    // Fallback / completion with random data starting 2019 if requested implicitly by user need
-    const START_YEAR = 2019
-    const CURRENT_YEAR = new Date().getFullYear()
+    // Build base stats from hardcoded data
+    let stats = hardcodedData.sort((a, b) => a.year - b.year)
 
-    // Deterministic pseudo-random so it stays stable per year
-    const pseudo = (year: number) => {
-      const x = Math.sin(year * 9973) * 10000
-      return x - Math.floor(x)
-    }
-
-    // If no data at all, generate full range
-    if (stats.length === 0 || stats[0].year > START_YEAR) {
-      const generated: { year: number; total: number }[] = []
-      for (let y = START_YEAR; y <= CURRENT_YEAR; y++) {
-        const r = pseudo(y)
-        // range 40 - 180
-        const total = 40 + Math.round(r * 140)
-        generated.push({ year: y, total })
-      }
-      stats = generated
-    } else {
-      // Fill any missing years between START_YEAR and CURRENT_YEAR
-      const existingYears = new Set(stats.map((s) => s.year))
-      for (let y = START_YEAR; y <= CURRENT_YEAR; y++) {
-        if (!existingYears.has(y)) {
-          const r = pseudo(y)
-          // keep random counts in similar plausible range
-          const total = 40 + Math.round(r * 140)
-          stats.push({ year: y, total })
-        }
-      }
-      stats.sort((a, b) => a.year - b.year)
-    }
+    // Only show years that have data (total > 0)
+    stats = stats.filter(stat => stat.total > 0)
 
     return NextResponse.json(stats)
   } catch (error) {
