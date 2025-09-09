@@ -6,35 +6,27 @@ type SendStatus = 'idle' | 'sending' | 'success' | 'error'
 
 function SendWaCell(field: any) {
   const [sendStatus, setSendStatus] = useState<SendStatus>('idle')
-  const [message, setMessage] = useState<string>('Kirim')
+  const [message, setMessage] = useState<string>('Kirim PDF')
 
   const handleSendWA = async () => {
-    if (!field?.rowData?.whatsapp) {
+    if (!field?.rowData?.id) {
       setSendStatus('error')
-      setMessage('No WhatsApp number')
+      setMessage('No registrant ID')
       return
     }
 
     setSendStatus('sending')
-    setMessage('Sending...')
+    setMessage('Generating PDF & Sending...')
 
     try {
-      // Format phone number for WhatsApp API
-      const phoneNumber = field.rowData.whatsapp.replace('+', '') + '@s.whatsapp.net'
-
-      // Create confirmation message
-      const confirmationMessage = `Assalamu'alaikum ${field.rowData.name},\n\nSelamat! Pendaftaran wisuda PPMI Anda telah dikonfirmasi.\n\nDetail Pendaftaran:\n- Nama: ${field.rowData.name}\n- Tipe: ${field.rowData.registrant_type}\n- Universitas: ${field.rowData.university}\n- ID Pendaftaran: ${field.rowData.reg_id}\n\nSilakan hadir sesuai jadwal yang akan diinformasikan selanjutnya.\n\nBarakallahu feekum.`
-
-      const response = await fetch('/api/whatsapp/send', {
+      // Call the regenerate-pdf API which will trigger the same logic as afterChange
+      const response = await fetch('/api/regenerate-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phone: phoneNumber,
-          message: confirmationMessage,
-          is_forwarded: false,
-          duration: 3600,
+          registrantId: field.rowData.id,
         }),
       })
 
@@ -45,7 +37,7 @@ function SendWaCell(field: any) {
 
       const data = await response.json()
       setSendStatus('success')
-      setMessage('Sent!')
+      setMessage('PDF Sent!')
     } catch (error: any) {
       setSendStatus('error')
       setMessage(`Failed: ${error.message}`)
@@ -53,7 +45,7 @@ function SendWaCell(field: any) {
       // Reset to idle after 3 seconds
       setTimeout(() => {
         setSendStatus('idle')
-        setMessage('Kirim')
+        setMessage('Kirim PDF')
       }, 3000)
     }
   }
