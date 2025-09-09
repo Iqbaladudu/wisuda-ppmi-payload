@@ -490,7 +490,11 @@ export const Registrants: CollectionConfig = {
       type: 'text',
       name: 'reg_id',
       label: 'ID Registrasi',
-      admin: { readOnly: true, description: 'Otomatis di-generate saat pendaftaran, format: 1-{registrant_type}-{name} (tetap/tidak berubah)' },
+      admin: {
+        readOnly: true,
+        description:
+          'Otomatis di-generate saat pendaftaran, format: 1-{registrant_type}-{name} (tetap/tidak berubah)',
+      },
       defaultValue: '',
     },
     {
@@ -542,7 +546,9 @@ export const Registrants: CollectionConfig = {
             try {
               const payload = req.payload
               // Use existing reg_id or generate fallback
-              const regId = doc.reg_id || `REG_${doc.id?.toString().replace(/-/g, '').toUpperCase().slice(0, 8) || Date.now().toString().slice(0, 8)}`
+              const regId =
+                doc.reg_id ||
+                `REG_${doc.id?.toString().replace(/-/g, '').toUpperCase().slice(0, 8) || Date.now().toString().slice(0, 8)}`
 
               // 1. Ambil template PDF
               const templateUrl =
@@ -639,7 +645,7 @@ export const Registrants: CollectionConfig = {
               form.flatten()
 
               // 5. Generate QR code dengan data teks
-              const qrText = `${doc.req_id}`
+              const qrText = `${dataToFill.reg_id}`
               let pdfBytes = await drawQRCodeOnPDF(
                 await pdfDoc.save(),
                 qrText,
@@ -718,9 +724,9 @@ export const Registrants: CollectionConfig = {
                 await req.payload.update({
                   collection: 'registrants',
                   id: doc.id,
-                  data: { 
+                  data: {
                     confirmation_pdf: pdfId,
-                    reg_id: regId
+                    reg_id: regId,
                   },
                   context: { skipPdf: true }, // HINDARI regenerasi
                   depth: 0,
@@ -769,7 +775,7 @@ export const Registrants: CollectionConfig = {
         // Check max registrants limit only for create operation
         if (operation === 'create') {
           await validateMaxRegistrants(req)
-          
+
           // Generate reg_id for new registrants
           if (!d.reg_id && d.registrant_type && d.name) {
             try {
@@ -782,11 +788,14 @@ export const Registrants: CollectionConfig = {
                 sort: '-createdAt',
                 limit: 1000,
               })
-              
+
               // Find the highest sequence number for this registrant type
               let sequenceNumber = 1
               for (const registrant of sameTypeRegistrants.docs) {
-                if (registrant.reg_id && registrant.reg_id.includes(`-${registrant.registrant_type}-`)) {
+                if (
+                  registrant.reg_id &&
+                  registrant.reg_id.includes(`-${registrant.registrant_type}-`)
+                ) {
                   const match = registrant.reg_id.match(/^(\d+)-/)
                   if (match) {
                     const existingSequence = parseInt(match[1])
@@ -796,7 +805,7 @@ export const Registrants: CollectionConfig = {
                   }
                 }
               }
-              
+
               // Create safe name format
               const safeName = d.name
                 .split('')
@@ -805,7 +814,7 @@ export const Registrants: CollectionConfig = {
                 .trim()
                 .replace(/\s+/g, '_')
                 .toUpperCase()
-              
+
               d.reg_id = `${sequenceNumber}-${d.registrant_type}-${safeName}`
             } catch (error) {
               // Fallback to original format if there's an error

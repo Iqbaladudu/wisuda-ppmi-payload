@@ -7,6 +7,7 @@ import { motion, useMotionValue, useTransform, useSpring, useInView } from 'moti
 import dynamic from 'next/dynamic'
 import ReactDOM from 'react-dom'
 import { ArrowRight, Play } from 'lucide-react'
+import Link from 'next/link'
 
 interface HeroStat {
   label: string
@@ -65,7 +66,6 @@ const CountUp: React.FC<{ target: number; suffix?: string; delay?: number; durat
     </span>
   )
 }
-
 
 // Decorative shape component
 const FloatingShape: React.FC<{
@@ -168,7 +168,6 @@ const CountdownTimer: React.FC<{ targetDate: Date | null }> = ({ targetDate }) =
   )
 }
 
-
 export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
   date,
   onGuideClick,
@@ -210,7 +209,13 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <pattern id="heroGrid" width="120" height="120" patternUnits="userSpaceOnUse" patternTransform="translate(0,0)">
+            <pattern
+              id="heroGrid"
+              width="120"
+              height="120"
+              patternUnits="userSpaceOnUse"
+              patternTransform="translate(0,0)"
+            >
               <rect
                 x="0"
                 y="0"
@@ -312,7 +317,8 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               className="inline-flex items-center gap-3 rounded-full bg-white/10 px-8 py-3 text-[13px] font-medium tracking-wide ring-1 ring-white/15 backdrop-blur-sm border border-white/10 shadow-lg"
             >
               <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-400" />
-              Pendaftaran Wisuda <span className="text-white/70 font-semibold">{ceremonyYear || '2025'}</span>
+              Pendaftaran Wisuda{' '}
+              <span className="text-white/70 font-semibold">{ceremonyYear || '2025'}</span>
             </motion.div>
 
             {/* Main Title with Enhanced Animation */}
@@ -320,25 +326,27 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               id="hero-alt-heading"
               className="font-extrabold tracking-tight text-5xl leading-[1.05] md:text-7xl lg:text-8xl drop-shadow-lg"
             >
-              {`Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`.split(' ').map((w, i) => (
-                <motion.span
-                  key={w + i}
-                  className={cn(
-                    'inline-block bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent',
-                    i === 0 ? 'pr-2' : 'px-1',
-                  )}
-                  initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
-                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.65,
-                    delay: 0.25 + i * 0.06,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                >
-                  {w}
-                </motion.span>
-              ))}
+              {`Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`
+                .split(' ')
+                .map((w, i) => (
+                  <motion.span
+                    key={w + i}
+                    className={cn(
+                      'inline-block bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent',
+                      i === 0 ? 'pr-2' : 'px-1',
+                    )}
+                    initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true }}
+                    transition={{
+                      duration: 0.65,
+                      delay: 0.25 + i * 0.06,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    {w}
+                  </motion.span>
+                ))}
             </motion.h1>
 
             {/* Enhanced Subtitle */}
@@ -371,8 +379,8 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               transition={{ delay: 0.6, duration: 0.6 }}
               className="flex flex-wrap items-center justify-center gap-8 pt-4 w-full max-w-2xl mx-auto"
             >
-              <Button
-                onClick={onRegisterClick}
+              <Link
+                href={'/intro'}
                 className="group relative overflow-hidden rounded-xl px-10 py-5 text-base font-semibold tracking-wide shadow-xl shadow-black/40 hover:shadow-2xl transition-all duration-300 hover:scale-105"
               >
                 <span className="absolute inset-0 -z-10 bg-gradient-to-r from-[#E07C45] via-[#D66837] to-[#B8451A]" />
@@ -381,14 +389,14 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
                   Gabung Sekarang{' '}
                   <ArrowRight size={18} className="transition group-hover:translate-x-1" />
                 </span>
-              </Button>
-              <Button
+              </Link>
+              {/* <Button
                 variant="outline"
                 onClick={onGuideClick}
                 className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white rounded-xl backdrop-blur shadow-xl shadow-black/30 hover:shadow-2xl transition-all duration-300 hover:scale-105 px-10 py-5 text-base"
               >
                 <Play size={16} className="mr-2" /> Panduan
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
         </div>
