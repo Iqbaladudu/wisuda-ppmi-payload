@@ -189,7 +189,7 @@
         "Email": "البريد الإلكتروني *",
         "Nationality": "الجنسية *",
         "PassportNumber": "رقم الجواز",
-        "PassportNumberRequired": "رقم الجواز * (إذا لم تكن إندونيسيًا)",
+        "PassportNumberRequired": "رقم الجواز * )",
         "PhoneNumber": "رقم الهاتف",
         "WhatsApp": "رقم الواتساب *",
         "Kekeluargaan": "الانتماء العائلي *",

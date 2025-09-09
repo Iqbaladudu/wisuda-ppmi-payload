@@ -201,7 +201,7 @@
         "Email": "Email *",
         "Nationality": "Nationality *",
         "PassportNumber": "Passport Number",
-        "PassportNumberRequired": "Passport Number * (if not Indonesian)",
+        "PassportNumberRequired": "Passport Number *",
         "PhoneNumber": "Phone Number",
         "WhatsApp": "WhatsApp Number *",
         "Kekeluargaan": "Family Association *",

@@ -209,7 +209,7 @@
         "Email": "Email *",
         "Nationality": "Kewarganegaraan *",
         "PassportNumber": "Nomor Paspor",
-        "PassportNumberRequired": "Nomor Paspor * (jika bukan WNI)",
+        "PassportNumberRequired": "Nomor Paspor *",
         "PhoneNumber": "Nomor Telepon",
         "WhatsApp": "Nomor WhatsApp *",
         "Kekeluargaan": "Kekeluargaan *",
