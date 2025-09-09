@@ -130,16 +130,59 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       }
     }
 
-    const fetchUniversities = async () => {
+    const loadUniversities = () => {
       setLoadingUniversities(true)
       try {
-        const response = await fetch('http://universities.hipolabs.com/search?&country=egypt')
-        if (!response.ok) throw new Error('Failed to fetch universities')
-        const data = await response.json()
-        const names = data.map((uni: any) => uni.name)
+        const hardcodedUniversities = [
+          {"state-province": null, "web_pages": ["http://www.aast.edu/"], "domains": ["aast.edu"], "country": "Egypt", "name": "Arab Academy for Science & Technology", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.akhbaracademy.edu.eg/"], "domains": ["akhbaracademy.edu.eg"], "country": "Egypt", "name": "Akhbar El Yom Academy", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.alex.edu.eg/"], "domains": ["alex.edu.eg"], "country": "Egypt", "name": "Alexandria University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.aou.edu.eg/"], "domains": ["aou.edu.eg"], "country": "Egypt", "name": "Arab Open University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.aucegypt.edu/"], "domains": ["aucegypt.edu"], "country": "Egypt", "name": "American University in Cairo", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.aun.edu.eg/"], "domains": ["aun.edu.eg"], "country": "Egypt", "name": "Assiut University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.azhar.edu.eg/"], "domains": ["azhar.edu.eg"], "country": "Egypt", "name": "Al Azhar University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.bsu.edu.eg/"], "domains": ["bsu.edu.eg"], "country": "Egypt", "name": "Beni Suef University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.bu.edu.eg/"], "domains": ["bu.edu.eg"], "country": "Egypt", "name": "Benha University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.cu.edu.eg/"], "domains": ["cu.edu.eg"], "country": "Egypt", "name": "Cairo University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.damanhour.edu.eg/"], "domains": ["damanhour.edu.eg"], "country": "Egypt", "name": "Damanhour University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.du.edu.eg/"], "domains": ["du.edu.eg"], "country": "Egypt", "name": "Damietta University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.elshoroukacademy.edu.eg/"], "domains": ["elshoroukacademy.edu.eg"], "country": "Egypt", "name": "El Shorouk Academy", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.fayoum.edu.eg/"], "domains": ["fayoum.edu.eg"], "country": "Egypt", "name": "Fayoum University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.futureuniversity.edu.eg/"], "domains": ["futureuniversity.edu.eg"], "country": "Egypt", "name": "Future University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.guc.edu.eg/"], "domains": ["guc.edu.eg"], "country": "Egypt", "name": "German University in Cairo", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.helwan.edu.eg/"], "domains": ["helwan.edu.eg"], "country": "Egypt", "name": "Helwan University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.hti.edu.eg/"], "domains": ["hti.edu.eg"], "country": "Egypt", "name": "Higher Technological Institute", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.kfs.edu.eg/"], "domains": ["kfs.edu.eg"], "country": "Egypt", "name": "Kafr El-Sheikh University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.mans.edu.eg/"], "domains": ["mans.edu.eg"], "country": "Egypt", "name": "Mansoura University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.menofia.edu.eg/"], "domains": ["menofia.edu.eg"], "country": "Egypt", "name": "Menoufia University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.minia.edu.eg/"], "domains": ["minia.edu.eg"], "country": "Egypt", "name": "Minia University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.miuegypt.edu.eg/"], "domains": ["miuegypt.edu.eg"], "country": "Egypt", "name": "Misr International University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.modern-academy.edu.eg/"], "domains": ["modern-academy.edu.eg"], "country": "Egypt", "name": "Modern Acadmy", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.msa.eun.eg/"], "domains": ["msa.eun.eg"], "country": "Egypt", "name": "Modern Sciences & Arts University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.mtc.edu.eg/"], "domains": ["mtc.edu.eg"], "country": "Egypt", "name": "Military Technical College", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.mti.edu.eg/"], "domains": ["mti.edu.eg"], "country": "Egypt", "name": "Modern University For Technology and Information", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.must.edu.eg/"], "domains": ["must.edu.eg"], "country": "Egypt", "name": "Misr University for Sience and Technology", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.nileu.edu.eg/"], "domains": ["nileu.edu.eg", "nu.edu.eg"], "country": "Egypt", "name": "Nile University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.o6u.edu.eg/"], "domains": ["o6u.edu.eg"], "country": "Egypt", "name": "October 6 university", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.pua.edu.eg/"], "domains": ["pua.edu.eg"], "country": "Egypt", "name": "Pharos International University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.sadatacademy.edu.eg/"], "domains": ["sadatacademy.edu.eg"], "country": "Egypt", "name": "Sadat Academy for Management Sciences", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["https://www.asu.edu.eg/"], "domains": ["shams.edu.eg", "asu.edu.eg", "eng.asu.edu.eg"], "country": "Egypt", "name": "Ain Shams University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.sohag-univ.edu.eg/"], "domains": ["sohag-univ.edu.eg"], "country": "Egypt", "name": "Sohag University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.su.edu.eg/"], "domains": ["su.edu.eg"], "country": "Egypt", "name": "Sinai University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.suez.edu.eg/"], "domains": ["suez.edu.eg"], "country": "Egypt", "name": "Suez Canal University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.svu.edu.eg/"], "domains": ["svu.edu.eg"], "country": "Egypt", "name": "South Valley University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.tanta.edu.eg/"], "domains": ["tanta.edu.eg"], "country": "Egypt", "name": "Tanta University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.ufe.edu.eg/"], "domains": ["ufe.edu.eg"], "country": "Egypt", "name": "Université Française d'Égypte", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.usenghor-francophonie.org/"], "domains": ["usenghor-francophonie.org"], "country": "Egypt", "name": "Université Senghor d'Alexandrie", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://www.zu.edu.eg/"], "domains": ["zu.edu.eg"], "country": "Egypt", "name": "Zagazig University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["http://cic-cairo.com/"], "domains": ["cic-cairo.com"], "country": "Egypt", "name": "CIC - Canadian International College", "alpha_two_code": "EG"},
+          {"state-province": "New Minia", "web_pages": ["https://deraya.edu.eg"], "domains": ["deraya.edu.eg"], "country": "Egypt", "name": "Deraya University", "alpha_two_code": "EG"},
+          {"state-province": null, "web_pages": ["https://buc.edu.eg"], "domains": ["buc.edu.eg"], "country": "Egypt", "name": "Badr University in Cairo", "alpha_two_code": "EG"}
+        ]
+        const names = hardcodedUniversities.map((uni: any) => uni.name)
         setUniversities(names)
       } catch (error) {
-        console.error('Error fetching universities:', error)
+        console.error('Error loading universities:', error)
         toast.error('Failed to load universities')
       } finally {
         setLoadingUniversities(false)
@@ -148,7 +191,7 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
 
     if (currentStep === 0) {
       fetchCountries()
-      fetchUniversities()
+      loadUniversities()
     }
   }, [currentStep])
 

@@ -53,16 +53,16 @@ export function Navbar({ className }: { className?: string }) {
               Wisuda PPMI
             </span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Select value={currentLocale} onValueChange={handleLocaleChange}>
               <SelectTrigger
                 size="sm"
-                className="rounded-full font-medium border-white/20 bg-white/10 hover:bg-white/20 text-neutral-800 dark:text-neutral-100 w-28 px-2"
+                className="rounded-full font-medium border-white/20 bg-white/10 hover:bg-white/20 text-neutral-800 dark:text-neutral-100 w-20 sm:w-28 px-1 sm:px-2 text-xs sm:text-sm"
               >
                 <SelectValue>
-                  {currentLocale === 'id' && '🇮🇩 Indonesia'}
-                  {currentLocale === 'en' && '🇬🇧 English'}
-                  {currentLocale === 'ar' && '🇪🇬 العربية'}
+                  {currentLocale === 'id' && '🇮🇩 ID'}
+                  {currentLocale === 'en' && '🇬🇧 EN'}
+                  {currentLocale === 'ar' && '🇪🇬 AR'}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -74,7 +74,7 @@ export function Navbar({ className }: { className?: string }) {
             <Button
               asChild
               size="sm"
-              className="rounded-full font-medium bg-gradient-to-r from-[#E07C45] to-[#B8451A] hover:from-[#E07C45]/90 hover:to-[#B8451A]/90"
+              className="rounded-full font-medium bg-gradient-to-r from-[#E07C45] to-[#B8451A] hover:from-[#E07C45]/90 hover:to-[#B8451A]/90 text-xs sm:text-sm px-2 sm:px-4 min-w-0 flex-shrink-0"
             >
               <Link href="/intro">{t('joinNow')}</Link>
             </Button>

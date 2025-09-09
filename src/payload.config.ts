@@ -45,8 +45,8 @@ export default buildConfig({
     ConfirmationPDF,
     RegistrationSettings,
   ],
-  cors: [process.env.CORS_ORIGIN || 'http://localhost:3000'],
-  csrf: [process.env.CSRF_ORIGIN || 'http://localhost:3000'],
+  cors: [process.env.BASE_URL!],
+  csrf: [process.env.BASE_URL!],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
