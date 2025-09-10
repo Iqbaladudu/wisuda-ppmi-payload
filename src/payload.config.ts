@@ -17,6 +17,7 @@ import { Syahadah } from './collections/Syahadah'
 import { ProfilePhoto } from './collections/ProfilePhoto'
 import { ConfirmationPDF } from './collections/ConfirmationPDF'
 import { RegistrationSettings } from './collections/RegistrationSettings'
+import { CountdownSettings } from './globals/CountdownSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -44,6 +45,9 @@ export default buildConfig({
     ProfilePhoto,
     ConfirmationPDF,
     RegistrationSettings,
+  ],
+  globals: [
+    CountdownSettings,
   ],
   cors: [process.env.BASE_URL!],
   csrf: [process.env.BASE_URL!],

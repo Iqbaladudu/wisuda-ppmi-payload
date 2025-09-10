@@ -4,6 +4,12 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+interface CountdownSettings {
+  targetDate: string
+  eventName: string
+  isActive: boolean
+}
+
 function getTimeRemaining(target: Date) {
   const total = target.getTime() - Date.now()
   const seconds = Math.max(0, Math.floor((total / 1000) % 60))
@@ -14,18 +20,48 @@ function getTimeRemaining(target: Date) {
 }
 
 interface HeroCountdownProps {
-  date: string
   className?: string
 }
 
-export const HeroCountdown: React.FC<HeroCountdownProps> = ({ date, className }) => {
-  const target = new Date(date)
+export const HeroCountdown: React.FC<HeroCountdownProps> = ({ className }) => {
+  const [countdownSettings, setCountdownSettings] = React.useState<CountdownSettings | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  
+  React.useEffect(() => {
+    const fetchCountdownSettings = async () => {
+      try {
+        const response = await fetch('/api/countdown-settings')
+        const data = await response.json()
+        setCountdownSettings(data)
+      } catch (error) {
+        console.error('Error fetching countdown settings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCountdownSettings()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    )
+  }
+
+  if (!countdownSettings || !countdownSettings.isActive) {
+    return null
+  }
+
+  const target = new Date(countdownSettings.targetDate)
   const [time, setTime] = React.useState(getTimeRemaining(target))
 
   React.useEffect(() => {
     const id = setInterval(() => setTime(getTimeRemaining(target)), 1000)
     return () => clearInterval(id)
-  }, [date])
+  }, [countdownSettings?.targetDate])
 
   const blocks = [
     { label: 'Days', value: time.days },
@@ -63,7 +99,7 @@ export const HeroCountdown: React.FC<HeroCountdownProps> = ({ date, className })
               id="hero-heading"
               className="font-extrabold tracking-tight text-4xl leading-[1.05] md:text-6xl lg:text-7xl bg-gradient-to-br from-[#FFE8DE] via-white to-[#F5C5B2] bg-clip-text text-transparent drop-shadow-md"
             >
-              Convocation Ceremony PPMI Mesir 2025
+              {countdownSettings.eventName}
             </h1>
             <p className="mx-auto max-w-2xl text-sm md:text-lg leading-relaxed text-[#FAD9CC] font-medium">
               Merayakan pencapaian akademik, dedikasi, dan perjalanan spiritual para wisudawan. \n

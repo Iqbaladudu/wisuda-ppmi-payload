@@ -9,6 +9,12 @@ import ReactDOM from 'react-dom'
 import { ArrowRight, Play } from 'lucide-react'
 import Link from 'next/link'
 
+interface CountdownSettings {
+  targetDate: string
+  eventName: string
+  isActive: boolean
+}
+
 interface HeroStat {
   label: string
   value: number
@@ -16,7 +22,6 @@ interface HeroStat {
 }
 
 interface HeroAlternativeProps {
-  date?: string
   onRegisterClick?: () => void
   onGuideClick?: () => void
   className?: string
@@ -169,12 +174,42 @@ const CountdownTimer: React.FC<{ targetDate: Date | null }> = ({ targetDate }) =
 }
 
 export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
-  date,
   onGuideClick,
   onRegisterClick,
   className,
 }) => {
-  const ceremonyDate = date ? new Date(date) : null
+  const [countdownSettings, setCountdownSettings] = React.useState<CountdownSettings | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  
+  React.useEffect(() => {
+    const fetchCountdownSettings = async () => {
+      try {
+        const response = await fetch('/api/countdown-settings')
+        const data = await response.json()
+        setCountdownSettings(data)
+      } catch (error) {
+        console.error('Error fetching countdown settings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCountdownSettings()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    )
+  }
+
+  if (!countdownSettings || !countdownSettings.isActive) {
+    return null
+  }
+
+  const ceremonyDate = countdownSettings.targetDate ? new Date(countdownSettings.targetDate) : null
   const dayFormatted = ceremonyDate?.toLocaleDateString('id-ID', {
     day: '2-digit',
     month: 'long',
@@ -326,7 +361,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               id="hero-alt-heading"
               className="font-extrabold tracking-tight text-5xl leading-[1.05] md:text-7xl lg:text-8xl drop-shadow-lg"
             >
-              {`Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`
+              {(countdownSettings.eventName || `Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`)
                 .split(' ')
                 .map((w, i) => (
                   <motion.span

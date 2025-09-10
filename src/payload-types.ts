@@ -98,8 +98,12 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'countdown-settings': CountdownSetting;
+  };
+  globalsSelect: {
+    'countdown-settings': CountdownSettingsSelect<false> | CountdownSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -670,6 +674,38 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Pengaturan countdown untuk halaman utama
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countdown-settings".
+ */
+export interface CountdownSetting {
+  id: string;
+  /**
+   * Tanggal dan waktu target untuk countdown
+   */
+  targetDate: string;
+  eventName: string;
+  /**
+   * Apakah countdown ini sedang aktif ditampilkan?
+   */
+  isActive?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countdown-settings_select".
+ */
+export interface CountdownSettingsSelect<T extends boolean = true> {
+  targetDate?: T;
+  eventName?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

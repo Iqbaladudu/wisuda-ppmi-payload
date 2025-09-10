@@ -1,0 +1,40 @@
+import type { GlobalConfig } from 'payload'
+
+export const CountdownSettings: GlobalConfig = {
+  slug: 'countdown-settings',
+  admin: {
+    description: 'Pengaturan countdown untuk halaman utama',
+    group: 'Settings',
+  },
+  access: {
+    read: () => true,
+    update: () => true,
+  },
+  fields: [
+    {
+      type: 'date',
+      name: 'targetDate',
+      label: 'Tanggal Target Countdown',
+      required: true,
+      admin: {
+        description: 'Tanggal dan waktu target untuk countdown',
+      },
+    },
+    {
+      type: 'text',
+      name: 'eventName',
+      label: 'Nama Acara',
+      required: true,
+      defaultValue: 'Convocation Ceremony PPMI Mesir 2025',
+    },
+    {
+      type: 'checkbox',
+      name: 'isActive',
+      label: 'Aktifkan Countdown',
+      defaultValue: true,
+      admin: {
+        description: 'Apakah countdown ini sedang aktif ditampilkan?',
+      },
+    },
+  ],
+}

@@ -226,14 +226,14 @@
         "ShofiReadyAttend": "Siap hadiri pendaftaran",
         "Predicate": "Predikat",
         "CumulativeScore": "Nilai Akumulatif",
-        "SyahadahPhoto": "Foto Syahadah",
+        "SyahadahPhoto": "Foto Syahadah (maks 2 MB)",
         "TashfiyahReadyAttend": "Siap hadiri pendaftaran",
         "TashfiyahReadySubmitProof": "Siap serahkan bukti kelulusan",
         "TashfiyahNoGraduationIfFailed": "Tidak lulus = tidak ikut wisuda",
         "TashfiyahStillGetAttributes": "Tidak lulus = tetap dapat atribut",
         "AtributReadyAttend": "Siap hadir",
         "AttributePackage": "Paket Atribut",
-        "Photo": "Foto Diri *",
+        "Photo": "Foto Diri (maks 2 MB) *",
         "TermsAgreement": "Syarat & Ketentuan *"
       },
       "Placeholders": {
@@ -339,7 +339,7 @@
         }
       },
       "Upload": {
-        "Info": "Upload foto diri Anda dan setujui syarat & ketentuan untuk melanjutkan.",
+        "Info": "Upload foto diri Anda (Maks 2MB) dan setujui syarat & ketentuan untuk melanjutkan.",
         "Uploading": "Mengupload foto...",
         "Success": "✓ Foto berhasil diupload",
         "NotUploaded": "Foto belum diupload"
