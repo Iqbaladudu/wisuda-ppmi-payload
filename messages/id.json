@@ -382,7 +382,7 @@
       "EmailInvalid": "Email tidak valid",
       "NationalityRequired": "Kewarganegaraan wajib diisi",
       "WhatsAppRequired": "WhatsApp wajib diisi",
-      "WhatsAppInvalid": "Nomor WhatsApp tidak valid, gunakan kode negara seperti: +62",
+      "WhatsAppInvalid": "Nomor WhatsApp tidak valid, gunakan kode negara seperti: +62/+20",
       "WhatsAppCountryCodeMismatch": "Kode negara WhatsApp tidak sesuai dengan kewarganegaraan",
       "YearInvalid": "Tahun tidak valid",
       "QuranMemorizationRange": "Hafalan Quran 0-30 juz",
