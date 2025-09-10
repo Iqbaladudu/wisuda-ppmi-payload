@@ -46,9 +46,7 @@ export default buildConfig({
     ConfirmationPDF,
     RegistrationSettings,
   ],
-  globals: [
-    CountdownSettings,
-  ],
+  globals: [CountdownSettings],
   cors: [process.env.BASE_URL!],
   csrf: [process.env.BASE_URL!],
   editor: lexicalEditor(),
