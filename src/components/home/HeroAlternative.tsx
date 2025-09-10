@@ -395,7 +395,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               transition={{ delay: 0.4, duration: 0.6 }}
               className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed font-normal px-4"
             >
-              Bergabunglah dalam momen bersejarah perayaan prestasi akademik di tanah suci Mesir
+              Bergabunglah dalam momen bersejarah perayaan prestasi akademik di Bumi Kinanah Mesir
             </motion.p>
 
             {/* Countdown Timer */}
