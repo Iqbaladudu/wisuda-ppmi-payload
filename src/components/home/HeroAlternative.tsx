@@ -157,7 +157,7 @@ const CountdownTimer: React.FC<{ targetDate: Date | null }> = ({ targetDate }) =
       aria-label="Hitung mundur menuju hari wisuda"
     >
       <span className="text-[11px] md:text-xs font-semibold tracking-widest text-white/55 uppercase">
-        Menuju Hari Wisuda
+        Menuju pendaftaran online
       </span>
       <div className="relative rounded-2xl ring-1 ring-white/15 bg-white/[0.06] backdrop-blur-sm px-3 py-3 md:px-5 md:py-4 shadow-inner shadow-black/30 flex items-stretch gap-1 md:gap-2">
         {segment(days, 'Hari')}
@@ -180,7 +180,7 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
 }) => {
   const [countdownSettings, setCountdownSettings] = React.useState<CountdownSettings | null>(null)
   const [loading, setLoading] = React.useState(true)
-  
+
   React.useEffect(() => {
     const fetchCountdownSettings = async () => {
       try {
@@ -361,7 +361,10 @@ export const HeroAlternative: React.FC<HeroAlternativeProps> = ({
               id="hero-alt-heading"
               className="font-extrabold tracking-tight text-5xl leading-[1.05] md:text-7xl lg:text-8xl drop-shadow-lg"
             >
-              {(countdownSettings.eventName || `Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`)
+              {(
+                countdownSettings.eventName ||
+                `Convocation Ceremony PPMI Mesir ${ceremonyYear || '2025'}`
+              )
                 .split(' ')
                 .map((w, i) => (
                   <motion.span

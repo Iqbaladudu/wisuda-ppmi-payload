@@ -28,6 +28,11 @@ export const CountdownSettings: GlobalConfig = {
       defaultValue: 'Convocation Ceremony PPMI Mesir 2025',
     },
     {
+      type: 'text',
+      name: 'label',
+      label: 'Label',
+    },
+    {
       type: 'checkbox',
       name: 'isActive',
       label: 'Aktifkan Countdown',
