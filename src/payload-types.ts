@@ -688,6 +688,7 @@ export interface CountdownSetting {
    */
   targetDate: string;
   eventName: string;
+  label?: string | null;
   /**
    * Apakah countdown ini sedang aktif ditampilkan?
    */
@@ -702,6 +703,7 @@ export interface CountdownSetting {
 export interface CountdownSettingsSelect<T extends boolean = true> {
   targetDate?: T;
   eventName?: T;
+  label?: T;
   isActive?: T;
   updatedAt?: T;
   createdAt?: T;

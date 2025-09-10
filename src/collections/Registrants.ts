@@ -208,13 +208,8 @@ const validateMaxRegistrants = async (req: any) => {
     if (settings.docs.length > 0) {
       const setting = settings.docs[0]
       const maxRegistrants = setting.max_registrants
-      console.log(setting)
 
-      // Skip validation if max_registrants is 0 or negative (unlimited)
-      if (maxRegistrants <= 0) {
-        console.log('Registration limit validation skipped: unlimited registration allowed')
-        return
-      }
+      console.log(setting)
 
       // Count current registrants
       const currentRegistrants = await req.payload.count({
