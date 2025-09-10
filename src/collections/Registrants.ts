@@ -208,6 +208,7 @@ const validateMaxRegistrants = async (req: any) => {
     if (settings.docs.length > 0) {
       const setting = settings.docs[0]
       const maxRegistrants = setting.max_registrants
+      console.log(setting)
 
       // Skip validation if max_registrants is 0 or negative (unlimited)
       if (maxRegistrants <= 0) {
@@ -220,9 +221,9 @@ const validateMaxRegistrants = async (req: any) => {
         collection: 'registrants',
       })
 
-      console.log(`Registration limit check: ${currentRegistrants.total}/${maxRegistrants}`)
+      console.log(`Registration limit check: ${currentRegistrants.totalDocs}/${maxRegistrants}`)
 
-      if (currentRegistrants.total >= maxRegistrants) {
+      if (currentRegistrants.totalDocs >= maxRegistrants) {
         throw new Error(
           `Pendaftaran telah ditutup. Jumlah maksimal pendaftar (${maxRegistrants}) telah tercapai.`,
         )

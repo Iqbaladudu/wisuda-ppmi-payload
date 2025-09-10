@@ -3,7 +3,7 @@
 # Apache Benchmark script untuk testing endpoint pendaftaran wisudappmimesir.com
 # Usage: ./benchmark-registration.sh [concurrent-users] [requests-per-user]
 
-API_URL="https://wisuda-ppmi-payload.vercel.app/api/submit"
+API_URL="https://wisudappmimesir.com/api/submit"
 SAMPLE_FILE="test-data/registration-sample.json"
 CONCURRENT=${1:-10}
 REQUESTS=${2:-50}
@@ -14,8 +14,20 @@ if [ ! -f "$SAMPLE_FILE" ]; then
     exit 1
 fi
 
-# Extract the first sample data for benchmarking
-SAMPLE_DATA=$(jq -r ".variations[0].data" "$SAMPLE_FILE")
+# Check if names file exists, generate if not
+NAMES_FILE="test-data/random-names.txt"
+if [ ! -f "$NAMES_FILE" ]; then
+    echo "Generating random names file..."
+    ./generate-random-names.sh
+fi
+
+# Get random name and total names count
+TOTAL_NAMES=$(wc -l < "$NAMES_FILE")
+RANDOM_LINE=$((RANDOM % TOTAL_NAMES + 1))
+RANDOM_NAME=$(sed -n "${RANDOM_LINE}p" "$NAMES_FILE")
+
+# Extract and modify sample data with random name
+SAMPLE_DATA=$(jq -r ".data" "$SAMPLE_FILE" | jq --arg name "$RANDOM_NAME" '.name = $name')
 
 if [ "$SAMPLE_DATA" = "null" ]; then
     echo "Error: Could not extract sample data"
