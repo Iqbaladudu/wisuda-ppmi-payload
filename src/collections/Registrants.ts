@@ -255,6 +255,7 @@ export const Registrants: CollectionConfig = {
   access: {
     read: () => true,
     create: () => true,
+    delete: ({ req }) => req.user?.collection == 'users',
   },
   versions: false,
   fields: [
