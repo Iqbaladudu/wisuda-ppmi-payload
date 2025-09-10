@@ -206,22 +206,38 @@ const validateMaxRegistrants = async (req: any) => {
     })
 
     if (settings.docs.length > 0) {
-      const maxRegistrants = settings.docs[0].max_registrants
+      const setting = settings.docs[0]
+      const maxRegistrants = setting.max_registrants
+
+      // Skip validation if max_registrants is 0 or negative (unlimited)
+      if (maxRegistrants <= 0) {
+        console.log('Registration limit validation skipped: unlimited registration allowed')
+        return
+      }
 
       // Count current registrants
       const currentRegistrants = await req.payload.count({
         collection: 'registrants',
       })
 
+      console.log(`Registration limit check: ${currentRegistrants.total}/${maxRegistrants}`)
+
       if (currentRegistrants.total >= maxRegistrants) {
         throw new Error(
           `Pendaftaran telah ditutup. Jumlah maksimal pendaftar (${maxRegistrants}) telah tercapai.`,
         )
       }
+    } else {
+      console.warn('No active registration settings found - proceeding without limit validation')
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw error
+      // Re-throw validation errors
+      if (error.message.includes('Pendaftaran telah ditutup')) {
+        throw error
+      }
+      console.error('Error validating max registrants:', error.message)
+      throw new Error('Gagal memeriksa batas maksimal pendaftar. Silakan coba lagi.')
     }
     throw new Error('Gagal memeriksa batas maksimal pendaftar')
   }
