@@ -100,9 +100,11 @@ export interface Config {
   };
   globals: {
     'countdown-settings': CountdownSetting;
+    'registration-status': RegistrationStatus;
   };
   globalsSelect: {
     'countdown-settings': CountdownSettingsSelect<false> | CountdownSettingsSelect<true>;
+    'registration-status': RegistrationStatusSelect<false> | RegistrationStatusSelect<true>;
   };
   locale: null;
   user: User & {
@@ -697,6 +699,25 @@ export interface CountdownSetting {
   createdAt?: string | null;
 }
 /**
+ * Pengaturan status pendaftaran wisuda
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registration-status".
+ */
+export interface RegistrationStatus {
+  id: string;
+  /**
+   * Centang untuk membuka pendaftaran
+   */
+  isOpen?: boolean | null;
+  /**
+   * Pesan yang ditampilkan ketika pendaftaran ditutup
+   */
+  closedMessage?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "countdown-settings_select".
  */
@@ -705,6 +726,17 @@ export interface CountdownSettingsSelect<T extends boolean = true> {
   eventName?: T;
   label?: T;
   isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registration-status_select".
+ */
+export interface RegistrationStatusSelect<T extends boolean = true> {
+  isOpen?: T;
+  closedMessage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

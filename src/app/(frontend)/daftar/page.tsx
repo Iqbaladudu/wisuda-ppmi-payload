@@ -1,8 +1,25 @@
 import MultiStepForm from '@/components/daftar/MultiStepForm'
+import RegistrationClosed from '@/components/daftar/RegistrationClosed'
 import { getTranslations } from 'next-intl/server'
 
 export default async function DaftarPage() {
   const t = await getTranslations('FormPage')
+
+  // Fetch registration status from API
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/registration-status`,
+    {
+      cache: 'no-store', // Always fetch fresh data
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch registration status')
+  }
+
+  const data = await response.json()
+  const { status, globalSettings } = data
+
   return (
     <div className="relative isolate w-full min-h-screen overflow-hidden pt-36 pb-24 text-white before:absolute before:inset-0 before:-z-30 before:bg-[#140A08] after:absolute after:inset-0 after:-z-20 after:bg-[radial-gradient(circle_at_40%_30%,rgba(230,140,90,0.18),transparent_70%)]">
       {/* Enhanced SVG Grid (matching intro style) */}
@@ -60,9 +77,18 @@ export default async function DaftarPage() {
           <p className="mb-10 max-w-2xl text-sm md:text-base leading-relaxed text-[#FCEFEA]/75">
             {t('Page.Description')}
           </p>
-          <div className="relative z-10 w-full p-4 md:p-6 lg:p-8">
-            <MultiStepForm />
-          </div>
+          {globalSettings.isOpen ? (
+            <div className="relative z-10 w-full p-4 md:p-6 lg:p-8">
+              <MultiStepForm />
+            </div>
+          ) : (
+            <RegistrationClosed
+              message={
+                globalSettings.closedMessage ||
+                'Pendaftaran wisuda belum dibuka. Silakan tunggu informasi lebih lanjut.'
+              }
+            />
+          )}
         </div>
       </div>
     </div>

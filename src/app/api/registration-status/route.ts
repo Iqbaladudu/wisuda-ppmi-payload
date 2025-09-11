@@ -3,39 +3,44 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 const majorLabels: Record<string, string> = {
-  'SYARIAH_ISLAMIYAH': 'Syariah Islamiyah',
-  'USHULUDDIN': 'Ushuluddin',
-  'BAHASA_ARAB': 'Lughoh Arabiyah',
-  'DIRASAT_BANIN': 'Dirasat Islamiyah wal Arabiyah Lil Banin',
-  'DIRASAT_BANAT': 'Dirasat Islamiyah wal Arabiyah Lil Banat',
-  'TAFSIR_ULUMUL_QURAN': 'Tafsir wa Ulumul Quran',
-  'HADITS_ULUM': 'Hadits wa Ulumul Hadits',
-  'AQIDAH_FALSAFAH': 'Aqidah wal Falsafah',
-  'DAKWAH_TSAQOFAH': 'Dakwah wa Tsaqofah',
-  'SYARIAH_QANUN': 'Syariah wal Qonun',
-  'BAHASA_ARAB_AMMAH': 'Lughoh Arabiyah Ammah',
-  'TARIKH_HADHARAH': 'Tarikh wal Hadharah',
-  'FIQH_AM': 'Fiqh Am',
-  'FIQIH_MUQARRAN': 'Fiqih Muqarran',
-  'USHUL_FIQH': 'Ushul Fiqh',
-  'LUGHAYWIYAT': 'Lughawiyyat',
-  'BALAGHAH_NAQD': 'Balaghah Wa Naqd',
-  'ADAB_NAQD': 'Adab Wa Naqd',
-  'OTHER': 'Lainnya',
+  SYARIAH_ISLAMIYAH: 'Syariah Islamiyah',
+  USHULUDDIN: 'Ushuluddin',
+  BAHASA_ARAB: 'Lughoh Arabiyah',
+  DIRASAT_BANIN: 'Dirasat Islamiyah wal Arabiyah Lil Banin',
+  DIRASAT_BANAT: 'Dirasat Islamiyah wal Arabiyah Lil Banat',
+  TAFSIR_ULUMUL_QURAN: 'Tafsir wa Ulumul Quran',
+  HADITS_ULUM: 'Hadits wa Ulumul Hadits',
+  AQIDAH_FALSAFAH: 'Aqidah wal Falsafah',
+  DAKWAH_TSAQOFAH: 'Dakwah wa Tsaqofah',
+  SYARIAH_QANUN: 'Syariah wal Qonun',
+  BAHASA_ARAB_AMMAH: 'Lughoh Arabiyah Ammah',
+  TARIKH_HADHARAH: 'Tarikh wal Hadharah',
+  FIQH_AM: 'Fiqh Am',
+  FIQIH_MUQARRAN: 'Fiqih Muqarran',
+  USHUL_FIQH: 'Ushul Fiqh',
+  LUGHAYWIYAT: 'Lughawiyyat',
+  BALAGHAH_NAQD: 'Balaghah Wa Naqd',
+  ADAB_NAQD: 'Adab Wa Naqd',
+  OTHER: 'Lainnya',
   'TIDAK ADA': 'Tidak Ada',
 }
 
 const registrantTypeLabels: Record<string, string> = {
-  'SHOFI': 'Shofi',
-  'TASHFIYAH': 'Tashfiyah',
-  'ATRIBUT': 'Pembeli Atribut',
+  SHOFI: 'Shofi',
+  TASHFIYAH: 'Tashfiyah',
+  ATRIBUT: 'Pembeli Atribut',
 }
 
 export async function GET() {
   try {
     const payload = await getPayload({ config })
 
-    // Get active registration settings
+    // Get registration status from global
+    const registrationStatus = await payload.findGlobal({
+      slug: 'registration-status',
+    })
+
+    // Get active registration settings for additional data
     const settings = await payload.find({
       collection: 'registration-settings',
       where: {
@@ -54,7 +59,8 @@ export async function GET() {
     const totalRegistrants = registrantsResult.totalDocs
     const maxRegistrants = settings.docs.length > 0 ? settings.docs[0].max_registrants : null
     const remainingSlots = maxRegistrants ? Math.max(0, maxRegistrants - totalRegistrants) : null
-    const isRegistrationOpen = maxRegistrants ? remainingSlots > 0 : true
+    const isRegistrationOpen =
+      registrationStatus.isOpen && (maxRegistrants ? remainingSlots > 0 : true)
 
     // Count by major
     const majorMap: Record<string, number> = {}
@@ -118,7 +124,11 @@ export async function GET() {
 
     // Generate status message
     let statusMessage = ''
-    if (!maxRegistrants) {
+    if (!registrationStatus.isOpen) {
+      statusMessage =
+        registrationStatus.closedMessage ||
+        'Pendaftaran wisuda belum dibuka. Silakan tunggu informasi lebih lanjut.'
+    } else if (!maxRegistrants) {
       statusMessage = 'Pendaftaran terbuka (batas tidak ditentukan)'
     } else if (isRegistrationOpen) {
       statusMessage = `Pendaftaran terbuka. Sisa kuota: ${remainingSlots}`
@@ -133,7 +143,13 @@ export async function GET() {
         maxRegistrants,
         currentRegistrants: totalRegistrants,
         remainingSlots,
-        utilizationRate: maxRegistrants ? Math.round((totalRegistrants / maxRegistrants) * 100) : null,
+        utilizationRate: maxRegistrants
+          ? Math.round((totalRegistrants / maxRegistrants) * 100)
+          : null,
+      },
+      globalSettings: {
+        isOpen: registrationStatus.isOpen,
+        closedMessage: registrationStatus.closedMessage,
       },
       breakdowns: {
         byMajor: majorBreakdown,
@@ -141,11 +157,14 @@ export async function GET() {
         byEducation: educationBreakdown,
         byFaculty: facultyBreakdown,
       },
-      settings: settings.docs.length > 0 ? {
-        maxRegistrants: settings.docs[0].max_registrants,
-        description: settings.docs[0].description,
-        isActive: settings.docs[0].is_active,
-      } : null,
+      settings:
+        settings.docs.length > 0
+          ? {
+              maxRegistrants: settings.docs[0].max_registrants,
+              description: settings.docs[0].description,
+              isActive: settings.docs[0].is_active,
+            }
+          : null,
     })
   } catch (error) {
     console.error('Error checking registration status:', error)

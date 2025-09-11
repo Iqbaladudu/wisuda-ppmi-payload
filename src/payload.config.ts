@@ -18,6 +18,7 @@ import { ProfilePhoto } from './collections/ProfilePhoto'
 import { ConfirmationPDF } from './collections/ConfirmationPDF'
 import { RegistrationSettings } from './collections/RegistrationSettings'
 import { CountdownSettings } from './globals/CountdownSettings'
+import { RegistrationStatus } from './globals/RegistrationStatus'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -46,7 +47,7 @@ export default buildConfig({
     ConfirmationPDF,
     RegistrationSettings,
   ],
-  globals: [CountdownSettings],
+  globals: [CountdownSettings, RegistrationStatus],
   cors: [process.env.BASE_URL!],
   csrf: [process.env.BASE_URL!],
   editor: lexicalEditor(),
