@@ -35,12 +35,20 @@ export async function GET() {
   try {
     const payload = await getPayload({ config })
 
-    // Get registration status from global
-    const registrationStatus = await payload.findGlobal({
-      slug: 'registration-status',
-    })
+    // Manual toggle (global) - single source of truth for open/close switch & message
+    let manualStatus: { isOpen: boolean; closedMessage?: string } = { isOpen: true }
+    try {
+      const global = (await payload.findGlobal({ slug: 'registration-status' })) as any
+      manualStatus = {
+        isOpen: Boolean(global?.isOpen),
+        closedMessage: global?.closedMessage,
+      }
+    } catch (e) {
+      // If global not yet created, keep defaults and continue silently
+      console.warn('RegistrationStatus global not found yet. Using defaults.')
+    }
 
-    // Get active registration settings for additional data
+    // Get active registration settings
     const settings = await payload.find({
       collection: 'registration-settings',
       where: {
@@ -59,8 +67,9 @@ export async function GET() {
     const totalRegistrants = registrantsResult.totalDocs
     const maxRegistrants = settings.docs.length > 0 ? settings.docs[0].max_registrants : null
     const remainingSlots = maxRegistrants ? Math.max(0, maxRegistrants - totalRegistrants) : null
-    const isRegistrationOpen =
-      registrationStatus.isOpen && (maxRegistrants ? remainingSlots > 0 : true)
+    const isCapacityAllowing = maxRegistrants ? (remainingSlots ?? 0) > 0 : true
+    // Final effective open state respects manual toggle first
+    const effectiveOpen = manualStatus.isOpen && isCapacityAllowing
 
     // Count by major
     const majorMap: Record<string, number> = {}
@@ -124,13 +133,11 @@ export async function GET() {
 
     // Generate status message
     let statusMessage = ''
-    if (!registrationStatus.isOpen) {
-      statusMessage =
-        registrationStatus.closedMessage ||
-        'Pendaftaran wisuda belum dibuka. Silakan tunggu informasi lebih lanjut.'
+    if (!manualStatus.isOpen) {
+      statusMessage = manualStatus.closedMessage || 'Pendaftaran wisuda belum dibuka.'
     } else if (!maxRegistrants) {
       statusMessage = 'Pendaftaran terbuka (batas tidak ditentukan)'
-    } else if (isRegistrationOpen) {
+    } else if (effectiveOpen) {
       statusMessage = `Pendaftaran terbuka. Sisa kuota: ${remainingSlots}`
     } else {
       statusMessage = `Pendaftaran ditutup. Kuota penuh (${maxRegistrants} pendaftar)`
@@ -138,18 +145,18 @@ export async function GET() {
 
     return NextResponse.json({
       status: {
-        isRegistrationOpen,
+        manual: manualStatus, // raw manual toggle
+        effectiveOpen, // final computed open state
+        capacity: {
+          isCapacityAllowing,
+          maxRegistrants,
+          currentRegistrants: totalRegistrants,
+          remainingSlots,
+          utilizationRate: maxRegistrants
+            ? Math.round((totalRegistrants / maxRegistrants) * 100)
+            : null,
+        },
         message: statusMessage,
-        maxRegistrants,
-        currentRegistrants: totalRegistrants,
-        remainingSlots,
-        utilizationRate: maxRegistrants
-          ? Math.round((totalRegistrants / maxRegistrants) * 100)
-          : null,
-      },
-      globalSettings: {
-        isOpen: registrationStatus.isOpen,
-        closedMessage: registrationStatus.closedMessage,
       },
       breakdowns: {
         byMajor: majorBreakdown,
