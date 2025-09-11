@@ -23,6 +23,15 @@ import { RegistrationStatus } from './globals/RegistrationStatus'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Derive allowed origins (CORS + CSRF). In dev, BASE_URL may be undefined which can cause
+// Payload to reject admin POST (e.g. updating globals) with Unauthorized. Provide sane fallbacks.
+const allowedOrigins = [
+  process.env.BASE_URL, // primary configured base URL
+  process.env.NEXT_PUBLIC_SITE_URL, // optional public site URL
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+].filter(Boolean) as string[]
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -48,8 +57,8 @@ export default buildConfig({
     RegistrationSettings,
   ],
   globals: [CountdownSettings, RegistrationStatus],
-  cors: [process.env.BASE_URL!],
-  csrf: [process.env.BASE_URL!],
+  cors: allowedOrigins,
+  csrf: allowedOrigins,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
