@@ -19,4 +19,19 @@ export const Syahadah: CollectionConfig = {
     mimeTypes: ['image/*'],
     staticDir: 'syahadah-photos',
   },
+  hooks: {
+    beforeOperation: [
+      ({ operation, req, context }) => {
+        console.log('Operation in syahadah collection:', operation)
+        console.log('Request File:', req.file)
+        console.log('Context:', context)
+
+        if (operation === 'update' && req.file) {
+          console.log('Previous syahadah name:', req.file.name)
+          req.file.name = context.name as string
+          console.log('Updated syahadah name:', req.file.name)
+        }
+      },
+    ],
+  },
 }
