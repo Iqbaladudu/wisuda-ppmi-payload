@@ -72,7 +72,29 @@ export async function drawImageOnPDF(
 
     const page = pages[coordinates.page - 1]
 
-    const image = await pdfDoc.embedJpg(imageData)
+    let image
+    // Check image type by magic number
+    if (
+      imageData[0] === 0xff &&
+      imageData[1] === 0xd8 &&
+      imageData[imageData.length - 2] === 0xff &&
+      imageData[imageData.length - 1] === 0xd9
+    ) {
+      // JPEG/JPG
+      console.log('Image format detected: JPEG/JPG')
+      image = await pdfDoc.embedJpg(imageData)
+    } else if (
+      imageData[0] === 0x89 &&
+      imageData[1] === 0x50 &&
+      imageData[2] === 0x4e &&
+      imageData[3] === 0x47
+    ) {
+      // PNG
+      console.log('Image format detected: PNG')
+      image = await pdfDoc.embedPng(imageData)
+    } else {
+      throw new Error('Unsupported image format. Only JPG/JPEG and PNG are supported.')
+    }
 
     // Calculate image size: 7/10 of page size
     const pageWidth = page.getWidth()

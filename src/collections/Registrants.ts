@@ -208,8 +208,13 @@ const validateMaxRegistrants = async (req: any) => {
     if (settings.docs.length > 0) {
       const setting = settings.docs[0]
       const maxRegistrants = setting.max_registrants
-
       console.log(setting)
+
+      // Skip validation if max_registrants is 0 or negative (unlimited)
+      if (maxRegistrants <= 0) {
+        console.log('Registration limit validation skipped: unlimited registration allowed')
+        return
+      }
 
       // Count current registrants
       const currentRegistrants = await req.payload.count({
@@ -751,9 +756,26 @@ export const Registrants: CollectionConfig = {
                 try {
                   const phoneNumber = doc.whatsapp.replace('+', '') + '@s.whatsapp.net'
                   const pdfCaption = createConfirmationMessage(doc, operation)
-                  const whatsappApiUrl = process.env.WHATSAPP_API_URL
-                  const whatsappUser = process.env.WHATSAPP_API_USER
-                  const whatsappPassword = process.env.WHATSAPP_API_PASSWORD
+                  // Alternating WhatsApp server (V2 or default) per send
+                  const waServers = [
+                    {
+                      url: process.env.WHATSAPP_API_URL_V2,
+                      user: process.env.WHATSAPP_API_USER_V2,
+                      password: process.env.WHATSAPP_API_PASSWORD_V2,
+                    },
+                    {
+                      url: process.env.WHATSAPP_API_URL,
+                      user: process.env.WHATSAPP_API_USER,
+                      password: process.env.WHATSAPP_API_PASSWORD,
+                    },
+                  ]
+                  // Use a simple round-robin based on current timestamp
+                  const waIndex = Date.now() % 2
+                  const waServer = waServers[waIndex]
+
+                  const whatsappApiUrl = waServer.url
+                  const whatsappUser = waServer.user
+                  const whatsappPassword = waServer.password
 
                   if (whatsappApiUrl && whatsappUser && whatsappPassword) {
                     await sendWhatsAppFile(
