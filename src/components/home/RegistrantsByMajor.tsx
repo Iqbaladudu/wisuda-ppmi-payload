@@ -238,6 +238,9 @@ export const RegistrantsByMajor = () => {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
+                    })}{' '}
+                    pukul{' '}
+                    {new Date().toLocaleTimeString('id-ID', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
