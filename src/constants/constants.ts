@@ -170,6 +170,13 @@ export const formSchema = z
   )
   .refine(
     (data) => {
+      // Syahadah photo required for all registrant types
+      return !!data.syahadah_photo && data.syahadah_photo !== ''
+    },
+    { message: 'Errors.SyahadahPhotoRequired', path: ['syahadah_photo'] },
+  )
+  .refine(
+    (data) => {
       if (data.registrant_type === 'TASHFIYAH') {
         if (!data.tashfiyah_ready_attend) return false
         if (!data.tashfiyah_ready_submit_proof) return false

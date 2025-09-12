@@ -136,6 +136,14 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
         const hardcodedUniversities = [
           {
             'state-province': null,
+            web_pages: ['http://www.azhar.edu.eg/'],
+            domains: ['azhar.edu.eg'],
+            country: 'Egypt',
+            name: 'Al Azhar University',
+            alpha_two_code: 'EG',
+          },
+          {
+            'state-province': null,
             web_pages: ['http://www.aast.edu/'],
             domains: ['aast.edu'],
             country: 'Egypt',
@@ -180,14 +188,6 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
             domains: ['aun.edu.eg'],
             country: 'Egypt',
             name: 'Assiut University',
-            alpha_two_code: 'EG',
-          },
-          {
-            'state-province': null,
-            web_pages: ['http://www.azhar.edu.eg/'],
-            domains: ['azhar.edu.eg'],
-            country: 'Egypt',
-            name: 'Al Azhar University',
             alpha_two_code: 'EG',
           },
           {
@@ -1083,6 +1083,46 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
         <div className="p-4 md:p-6 animate-in fade-in slide-in-from-left-2 duration-500">
           <div className="bg-gradient-to-tr from-white to-white/70 backdrop-blur-sm p-6 md:p-8 rounded-xl ring-1 ring-[#3E2522]/10 shadow-sm">
             <div className="space-y-6">
+              {/* Syahadah Photo - Required for all registrant types */}
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#3E2522]">
+                    {t('Form.Labels.SyahadahPhoto')} <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        if (!file.type.startsWith('image/')) {
+                          toast.error(t('Errors.InvalidFileType'))
+                          return
+                        }
+                        if (file.size > 2 * 1024 * 1024) {
+                          // 2MB limit
+                          toast.error(t('Errors.FileTooLarge'))
+                          return
+                        }
+                        uploadFile(file, 'syahadah_photo')
+                      }
+                    }}
+                    disabled={uploadingSyahadah}
+                    className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
+                  />
+                  {uploadingSyahadah && (
+                    <p className="text-sm text-blue-600 animate-pulse">
+                      {t('Form.Upload.Uploading')}
+                    </p>
+                  )}
+                  {syahadahUploaded && (
+                    <p className="text-sm text-green-600">{t('Messages.UploadSuccess')}</p>
+                  )}
+                  {!syahadahUploaded && !uploadingSyahadah && (
+                    <p className="text-sm text-red-600">Wajib diunggah</p>
+                  )}
+                </div>
+              </div>
               {registrantType === 'SHOFI' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -1169,40 +1209,6 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
                       </FormItem>
                     )}
                   />
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-[#3E2522]">
-                      {t('Form.Labels.SyahadahPhoto')}
-                    </label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          if (!file.type.startsWith('image/')) {
-                            toast.error(t('Errors.InvalidFileType'))
-                            return
-                          }
-                          if (file.size > 2 * 1024 * 1024) {
-                            // 2MB limit
-                            toast.error(t('Errors.FileTooLarge'))
-                            return
-                          }
-                          uploadFile(file, 'syahadah_photo')
-                        }
-                      }}
-                      disabled={uploadingSyahadah}
-                      className="border-[#3E2522]/30 focus:border-[#3E2522] transition-colors"
-                    />
-                    {uploadingSyahadah && (
-                      <p className="text-sm text-blue-600 animate-pulse">
-                        {t('Form.Upload.Uploading')}
-                      </p>
-                    )}
-                    {syahadahUploaded && (
-                      <p className="text-sm text-green-600">{t('Messages.UploadSuccess')}</p>
-                    )}
-                  </div>
                 </div>
               )}
               {registrantType === 'TASHFIYAH' && (
@@ -1711,12 +1717,16 @@ const StepContent: React.FC<StepContentProps> = ({ currentStep, form }) => {
       }
 
       const specialRows: Row[] = []
+      // Add syahadah photo for all registrant types
+      specialRows.push(
+        { label: t('Form.Labels.SyahadahPhoto'), value: boolIcon(!!data.syahadah_photo) },
+      )
+      
       if (data.registrant_type === 'SHOFI') {
         specialRows.push(
           { label: t('Form.Labels.ShofiReadyAttend'), value: boolIcon(data.shofi_ready_attend) },
           { label: t('Form.Labels.Predicate'), value: chip(predicateLabel[data.predicate]) },
           { label: t('Form.Labels.CumulativeScore'), value: chip(data.cumulative_score) },
-          { label: t('Form.Labels.SyahadahPhoto'), value: boolIcon(!!data.syahadah_photo) },
         )
       }
       if (data.registrant_type === 'TASHFIYAH') {

@@ -99,7 +99,12 @@ const MultiStepForm: React.FC = () => {
         >
           <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="denseGridMinorSuccess" width="40" height="40" patternUnits="userSpaceOnUse">
+              <pattern
+                id="denseGridMinorSuccess"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
                 <path d="M40 0H0V40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
               </pattern>
               <pattern
@@ -135,15 +140,19 @@ const MultiStepForm: React.FC = () => {
             />
           </svg>
         </div>
-        
+
         <div className="flex flex-col items-center justify-center gap-10 w-full">
           {/* Success Container matching daftar page style */}
           <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl px-8 py-12 md:px-12 md:py-16 text-center shadow-xl">
-
             {/* Simple elegant checkmark */}
             <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/20 text-green-400 backdrop-blur-sm">
               <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
 
@@ -225,7 +234,7 @@ const MultiStepForm: React.FC = () => {
                         toast.info(t('Messages.PreviousStep'))
                       }}
                       disabled={currentStep === 0 || isValidating || isSubmitting}
-                      className="min-w-[120px] sm:min-w-[130px] w-full sm:w-auto"
+                      className="min-w-[120px] sm:min-w-[130px] text-gray-700 w-full sm:w-auto"
                     >
                       {t('Buttons.Previous')}
                     </Button>
