@@ -26,7 +26,7 @@ interface HeroCountdownProps {
 export const HeroCountdown: React.FC<HeroCountdownProps> = ({ className }) => {
   const [countdownSettings, setCountdownSettings] = React.useState<CountdownSettings | null>(null)
   const [loading, setLoading] = React.useState(true)
-  
+
   React.useEffect(() => {
     const fetchCountdownSettings = async () => {
       try {
@@ -64,10 +64,10 @@ export const HeroCountdown: React.FC<HeroCountdownProps> = ({ className }) => {
   }, [countdownSettings?.targetDate])
 
   const blocks = [
-    { label: 'Days', value: time.days },
-    { label: 'Hours', value: time.hours },
-    { label: 'Minutes', value: time.minutes },
-    { label: 'Seconds', value: time.seconds },
+    { label: 'Hari', value: time.days },
+    { label: 'Jam', value: time.hours },
+    { label: 'Menit', value: time.minutes },
+    { label: 'Detik', value: time.seconds },
   ]
 
   return (

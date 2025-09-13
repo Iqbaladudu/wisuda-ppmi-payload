@@ -18,6 +18,12 @@ export const CountdownSettings: GlobalConfig = {
       required: true,
       admin: {
         description: 'Tanggal dan waktu target untuk countdown',
+        date: {
+          // Tampilkan pemilih tanggal & waktu
+          pickerAppearance: 'dayAndTime',
+          // Format tampilan di panel admin (dd MMMM yyyy HH:mm:ss)
+          displayFormat: 'dd MMMM yyyy HH:mm:ss',
+        },
       },
     },
     {
