@@ -45,6 +45,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: result })
   } catch (error: any) {
     console.error('Submit registrant error:', error)
+
+    // Handle Payload validation errors
+    if (error.errors && Array.isArray(error.errors)) {
+      const fieldErrors: Record<string, string> = {}
+      error.errors.forEach((err: any) => {
+        if (err.field) {
+          fieldErrors[err.field] = err.message
+        }
+      })
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message || 'Validasi gagal',
+          details: fieldErrors,
+        },
+        { status: 400 },
+      )
+    }
+
+    // Handle custom validation errors from hooks
+    if (error.message) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+          details: null,
+        },
+        { status: 400 },
+      )
+    }
+
     // Return detailed error
     return NextResponse.json(
       {

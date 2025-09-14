@@ -222,6 +222,15 @@ const MultiStepForm: React.FC = () => {
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
                 <div className="bg-white/70 rounded-lg p-2 sm:p-3">
                   <StepContent currentStep={currentStep} form={form} />
+                  {/* Display root error if exists */}
+                  {form.formState.errors.root && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-600">
+                        {t(form.formState.errors.root.message as any) ||
+                          form.formState.errors.root.message}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
                   <div className="flex gap-2">
@@ -287,6 +296,16 @@ const MultiStepForm: React.FC = () => {
                             description: t('Messages.WaitSubmit'),
                           })
                           await onSubmit(data)
+                          // Check for root error after submit attempt
+                          if (form.formState.errors.root) {
+                            const errorMsg = form.formState.errors.root.message?.startsWith(
+                              'Errors.',
+                            )
+                              ? t(form.formState.errors.root.message as any) ||
+                                form.formState.errors.root.message
+                              : form.formState.errors.root.message
+                            toast.error(errorMsg)
+                          }
                         }}
                         disabled={isValidating || isSubmitting || hasCurrentStepErrors()}
                         className="min-w-[150px] sm:min-w-[160px] w-full sm:w-auto bg-gradient-to-r from-[#3E2522] to-[#5A3A2F] hover:from-[#472D2A] hover:to-[#6B463C] text-[#FCEFEA] shadow-lg shadow-[#3E2522]/20"

@@ -92,6 +92,11 @@ const useMultiStepForm = () => {
     },
     onError: (error: any) => {
       console.error('Submit error:', error)
+      // Display error in toaster
+      const errorMessage = error.message?.startsWith('Errors.')
+        ? t(error.message as any) || error.message
+        : error.message || 'Terjadi kesalahan saat mengirim data'
+      toast.error(errorMessage)
       // Handle different types of errors
       if (error.details) {
         // Payload validation errors

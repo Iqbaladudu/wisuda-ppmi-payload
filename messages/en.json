@@ -368,6 +368,8 @@
       "QuranMemorizationRange": "Quran memorization 0-30 juz",
       "ScoreRange": "Score 0-100",
       "PassportRequired": "Passport number required",
+      "PassportDuplicate": "This passport number is already registered",
+      "WhatsAppDuplicate": "This WhatsApp number is already registered",
       "ContinuingStudyRequired": "Continuing study fields required for Bachelor level",
       "ShofiRequired": "Shofi fields are required",
       "TashfiyahRequired": "Tashfiyah fields are required",

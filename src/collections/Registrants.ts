@@ -312,7 +312,7 @@ export const Registrants: CollectionConfig = {
       label: 'Kewarganegaraan',
       required: true,
     },
-    { type: 'text', name: 'passport_number', label: 'Nomor Paspor', required: true },
+    { type: 'text', name: 'passport_number', label: 'Nomor Paspor', required: true, unique: true },
     { type: 'text', name: 'phone_number', label: 'Nomor Telepon' },
     { type: 'text', name: 'whatsapp', label: 'Nomor WhatsApp', required: true },
     {
@@ -812,6 +812,30 @@ export const Registrants: CollectionConfig = {
         // Check max registrants limit only for create operation
         if (operation === 'create') {
           await validateMaxRegistrants(req)
+
+          // Cek duplikasi berdasarkan passport_number
+          if (d.passport_number) {
+            const passportExists = await req.payload.find({
+              collection: 'registrants',
+              where: { passport_number: { equals: d.passport_number } },
+              limit: 1,
+            })
+            if (passportExists.docs.length > 0) {
+              throw new Error('Errors.PassportDuplicate')
+            }
+          }
+
+          // Cek duplikasi berdasarkan whatsapp
+          if (d.whatsapp) {
+            const waExists = await req.payload.find({
+              collection: 'registrants',
+              where: { whatsapp: { equals: d.whatsapp } },
+              limit: 1,
+            })
+            if (waExists.docs.length > 0) {
+              throw new Error('Errors.WhatsAppDuplicate')
+            }
+          }
 
           // Generate reg_id for new registrants
           if (!d.reg_id && d.registrant_type && d.name) {

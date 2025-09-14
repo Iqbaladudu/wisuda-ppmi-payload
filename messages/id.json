@@ -388,6 +388,8 @@
       "QuranMemorizationRange": "Hafalan Quran 0-30 juz",
       "ScoreRange": "Nilai 0-100",
       "PassportRequired": "Nomor paspor wajib diisi",
+      "PassportDuplicate": "Nomor paspor ini sudah terdaftar",
+      "WhatsAppDuplicate": "Nomor WhatsApp ini sudah terdaftar",
       "ContinuingStudyRequired": "Field melanjutkan studi dan detailnya wajib untuk S1",
       "ShofiRequired": "Field Shofi wajib diisi",
       "TashfiyahRequired": "Field Tashfiyah wajib diisi",

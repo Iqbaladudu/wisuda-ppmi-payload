@@ -358,6 +358,8 @@
       "QuranMemorizationRange": "الحفظ 0-30 جزء",
       "ScoreRange": "الدرجة 0-100",
       "PassportRequired": "رقم الجواز مطلوب",
+      "PassportDuplicate": "رقم الجواز هذا مسجل بالفعل",
+      "WhatsAppDuplicate": "رقم الواتساب هذا مسجل بالفعل",
       "ContinuingStudyRequired": "حقول متابعة الدراسة مطلوبة للبكالوريوس",
       "ShofiRequired": "حقول صفِّي مطلوبة",
       "TashfiyahRequired": "حقول تصفية مطلوبة",
